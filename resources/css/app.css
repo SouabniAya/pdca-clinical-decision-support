@@ -1,6 +1,7 @@
 @import 'base.css';
 @import 'components/sidebar.css';
 @import 'components/header.css';
+@import 'pages/login.css';
 @import 'pages/patients.css';
 @import './pages/patient-details.css';
 @import './pages/clinical-explanation.css';
