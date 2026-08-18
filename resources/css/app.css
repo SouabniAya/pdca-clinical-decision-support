@@ -1,0 +1,10 @@
+@import 'base.css';
+@import 'components/sidebar.css';
+@import 'components/header.css';
+@import 'pages/patients.css';
+@import './pages/patient-details.css';
+@import './pages/clinical-explanation.css';
+@import './pages/clinical-rules-repository.css';
+@import './pages/help.css';
+@import './pages/dashboard.css';
+@import './pages/settings.css';

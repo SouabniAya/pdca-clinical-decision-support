@@ -1,0 +1,320 @@
+/* ==========================================================================
+   Help / User Guide page
+   ========================================================================== */
+
+.help-page {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ---------- Head ---------- */
+
+.help-page__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.help-page__head h1 {
+  margin: 0 0 6px;
+  font-family: var(--font-heading);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-ink-black);
+}
+
+.help-page__head p {
+  margin: 0;
+  color: var(--color-neutral-500);
+  font-size: 14px;
+}
+
+.help-page__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: var(--color-deep-navy);
+  color: var(--color-white);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.help-page__btn:hover {
+  background: var(--color-navy);
+}
+
+.help-page__btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* ---------- Section nav (anchors) ---------- */
+
+.help-page__nav {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 6px;
+  background: var(--color-white);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: var(--radius-pill);
+  width: fit-content;
+}
+
+.help-page__nav-link {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-neutral-500);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.help-page__nav-link:hover {
+  background: var(--color-neutral-100);
+  color: var(--color-navy);
+}
+
+/* ---------- Section wrapper ---------- */
+
+.help-page__section {
+  background: var(--color-white);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 14px;
+  padding: 28px;
+  scroll-margin-top: 90px;
+}
+
+.help-page__section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.help-page__section-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--color-neutral-100);
+  color: var(--color-cerulean);
+  flex-shrink: 0;
+}
+
+.help-page__section-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.help-page__section-head h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-ink-black);
+}
+
+/* ---------- How it works : info cards ---------- */
+
+.help-page__cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.help-page__info-card {
+  position: relative;
+  padding: 20px 18px;
+  background: var(--color-neutral-50);
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 12px;
+}
+
+.help-page__info-card-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 12px;
+  border-radius: 50%;
+  background: var(--color-cerulean);
+  color: var(--color-white);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.help-page__info-card h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink-black);
+}
+
+.help-page__info-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-neutral-500);
+}
+
+/* ---------- Clinical data guide : table ---------- */
+
+.help-page__table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 10px;
+}
+
+.help-page__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.help-page__table thead tr {
+  background: var(--color-deep-navy);
+}
+
+.help-page__table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--color-white);
+  white-space: nowrap;
+}
+
+.help-page__table td {
+  padding: 14px 16px;
+  border-top: 1px solid var(--color-neutral-300);
+  color: var(--color-text-primary);
+  vertical-align: top;
+}
+
+.help-page__table tbody tr:hover {
+  background: var(--color-neutral-50);
+}
+
+.help-page__table td:first-child {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ---------- Info note ---------- */
+
+.help-page__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  background: rgba(14, 124, 158, 0.08);
+  border: 1px solid rgba(14, 124, 158, 0.25);
+  border-radius: 10px;
+  color: var(--color-navy);
+}
+
+.help-page__note svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--color-cerulean);
+}
+
+.help-page__note p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* ---------- FAQ (accordion) ---------- */
+
+.help-page__faq {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.help-page__faq-item {
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 10px;
+  padding: 4px 18px;
+  background: var(--color-neutral-50);
+}
+
+.help-page__faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-ink-black);
+  cursor: pointer;
+  list-style: none;
+}
+
+.help-page__faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.help-page__faq-item summary svg {
+  width: 18px;
+  height: 18px;
+  color: var(--color-neutral-500);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.help-page__faq-item[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.help-page__faq-item[open] {
+  background: var(--color-white);
+  border-color: var(--color-cerulean);
+}
+
+.help-page__faq-item p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-neutral-500);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 1024px) {
+  .help-page__cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .help-page {
+    padding: 20px;
+  }
+
+  .help-page__cards {
+    grid-template-columns: 1fr;
+  }
+
+  .help-page__table-wrap {
+    border: none;
+  }
+}

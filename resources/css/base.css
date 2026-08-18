@@ -1,0 +1,51 @@
+/* ==========================================================================
+   Base / Design tokens
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --color-ink-black: #0B1220;
+  --color-deep-navy: #0B2C4D;
+  --color-navy: #10375C;
+  --color-cerulean: #0E7C9E;
+  --color-sky: #17B3E0;
+  --color-white: #FFFFFF;
+
+  --color-text-primary: #0B1220;
+  --color-neutral-50: #F7F9FA;
+  --color-neutral-100: #EEF2F5;
+  --color-neutral-300: #D8E1E8;
+  --color-neutral-500: #6B7C88;
+
+  --color-danger: #E63946;
+  --color-success: #1E7E34;
+
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --sidebar-width: 240px;
+  --header-height: 72px;
+  --radius-pill: 999px;
+  --radius-sm: 6px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+  background: var(--color-neutral-50);
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+a { color: inherit; }
+button { font: inherit; }
