@@ -11,8 +11,6 @@
 
     <div class="login-page">
 
-        <span class="login-page__eyebrow">log in</span>
-
         <div class="login-panel">
             <form class="login-form" method="POST" action="<?php echo e(route('login.store')); ?>">
                 <?php echo csrf_field(); ?>

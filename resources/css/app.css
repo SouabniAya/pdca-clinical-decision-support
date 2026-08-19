@@ -3,6 +3,7 @@
 @import 'components/header.css';
 @import 'pages/login.css';
 @import 'pages/patients.css';
+@import './pages/clinical-form.css';
 @import './pages/patient-details.css';
 @import './pages/clinical-explanation.css';
 @import './pages/clinical-rules-repository.css';
