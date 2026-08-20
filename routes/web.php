@@ -259,7 +259,7 @@ function pdacStageLabel(array $clinical, ?string $abcType): string
     ];
     $label = $labels[$clinical['resectability']] ?? $clinical['resectability'];
     if ($clinical['resectability'] === 'resectable' && $abcType) {
-        $label .= " \u2014 Type {$abcType}";
+        $label .= " — Type {$abcType}";
     }
     return $label;
 }

@@ -29,10 +29,7 @@
         </div>
     </div>
 
-    <div class="pd-layout">
-
-        
-        <div class="pd-main">
+    <div class="pd-main">
 
             
             <div class="pd-clinical-grid">
@@ -172,8 +169,6 @@
                     <strong>TNCD, Chapter 9, §<?php echo e($result['source']); ?></strong>
                 </div>
             </div>
-
-        </div>
 
     </div>
 

@@ -31,10 +31,7 @@
         </div>
     </div>
 
-    <div class="pd-layout">
-
-        {{-- Main column --}}
-        <div class="pd-main">
+    <div class="pd-main">
 
             {{-- Two summary boxes side by side --}}
             <div class="pd-clinical-grid">
@@ -173,8 +170,6 @@
                     <strong>TNCD, Chapter 9, §{{ $result['source'] }}</strong>
                 </div>
             </div>
-
-        </div>
 
     </div>
 

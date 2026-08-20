@@ -100,7 +100,7 @@
         </table>
     </div>
 
-    <a href="#" class="patients-page__view-all">View All Recommendations </a>
+    <a href="#" class="patients-page__view-all patients-page__view-all--right">View All Recommendations </a>
 
 </div>
 @endsection

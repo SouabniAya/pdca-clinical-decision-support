@@ -231,3 +231,7 @@
   color: var(--color-cerulean);
   text-decoration: none;
 }
+.patients-page__view-all--right {
+  display: block;
+  text-align: right;
+}
