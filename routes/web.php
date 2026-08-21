@@ -302,3 +302,99 @@ Route::get('/recommendations/{id}', function ($id) {
 // Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
 // Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences.update');
 // TODO: uncomment once App\Http\Controllers\SettingsController exists
+function pdacReportsDemoData(): array
+{
+    return [
+        [
+            'id' => 1,
+            'name' => 'Monthly Recommendations Summary',
+            'type' => 'recommendations',
+            'date_from' => '01/07/2026',
+            'date_to' => '31/07/2026',
+            'generated_by' => 'Dr. Taieb',
+            'created_at' => '01/08/2026 09:15',
+            'status' => 'completed',
+        ],
+        [
+            'id' => 2,
+            'name' => 'Consultations Overview — August',
+            'type' => 'consultations',
+            'date_from' => '01/08/2026',
+            'date_to' => '21/08/2026',
+            'generated_by' => 'Dr. Souabni',
+            'created_at' => '21/08/2026 08:40',
+            'status' => 'completed',
+        ],
+        [
+            'id' => 3,
+            'name' => 'Patients Active Cohort',
+            'type' => 'patients',
+            'date_from' => '01/01/2026',
+            'date_to' => '21/08/2026',
+            'generated_by' => 'Dr. Taieb',
+            'created_at' => '20/08/2026 17:05',
+            'status' => 'pending',
+        ],
+        [
+            'id' => 4,
+            'name' => 'Clinical Rules Audit Log',
+            'type' => 'audit',
+            'date_from' => '01/06/2026',
+            'date_to' => '31/07/2026',
+            'generated_by' => 'System',
+            'created_at' => '01/08/2026 06:00',
+            'status' => 'failed',
+        ],
+    ];
+}
+Route::put('/settings/profile', function () {
+    // Placeholder — replace with real profile update logic later
+    return back();
+})->name('settings.profile.update');
+
+Route::put('/settings/password', function () {
+    // Placeholder — replace with real password update logic later
+    return back();
+})->name('settings.password.update');
+
+Route::put('/settings/preferences', function () {
+    // Placeholder — replace with real preferences update logic later
+    return back();
+})->name('settings.preferences.update');
+Route::get('/reports', function () {
+
+    $stats = [
+        'total_patients' => 128,
+        'total_recommendations' => 96,
+        'total_consultations' => 54,
+        'total_conflicts' => 7,
+    ];
+
+    $doctors = [
+        (object) ['id' => 1, 'name' => 'Dr. Taieb'],
+        (object) ['id' => 2, 'name' => 'Dr. Souabni'],
+        (object) ['id' => 3, 'name' => 'Dr. Kaci'],
+    ];
+
+    $reports = pdacReportsDemoData();
+
+    return view('patients.reports', [
+        'stats' => $stats,
+        'doctors' => $doctors,
+        'reports' => $reports,
+    ]);
+
+})->name('reports.index');
+
+Route::get('/reports/{id}/download', function ($id) {
+    $report = collect(pdacReportsDemoData())->firstWhere('id', (int) $id);
+
+    if (! $report) {
+        abort(404);
+    }
+
+    return 'TODO: download report #' . $id;
+})->name('reports.download');
+Route::get('/doctor/profile', function () {
+    return view('patients.doctor-profile');
+})->name('doctor.profile');
