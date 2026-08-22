@@ -6,11 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
+        // Table 'users' déjà créée par data_base.sql — on ne la recrée pas ici
+        /*
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');
@@ -20,6 +19,7 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
+        */
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
@@ -37,12 +37,9 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        // Schema::dropIfExists('users'); // ne pas toucher à la table existante venant de data_base.sql
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
     }

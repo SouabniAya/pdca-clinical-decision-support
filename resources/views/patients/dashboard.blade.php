@@ -125,7 +125,7 @@
                             <strong>Yasmine Cherif</strong>
                             <span>Suggested: Neoadjuvant chemotherapy &middot; Locally Advanced</span>
                         </div>
-                        <a href="{{ route('patients.details') }}" class="dashboard-recos__action">Review</a>
+                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
                     </li>
 
                     <li class="dashboard-recos__item">
@@ -133,7 +133,7 @@
                             <strong>Karim Ferhat</strong>
                             <span>Suggested: Surgical resection &middot; Localized</span>
                         </div>
-                        <a href="{{ route('patients.details') }}" class="dashboard-recos__action">Review</a>
+                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
                     </li>
 
                     <li class="dashboard-recos__item">
@@ -141,7 +141,7 @@
                             <strong>Sofia Amrani</strong>
                             <span>Suggested: Radiotherapy &middot; Metastatic</span>
                         </div>
-                        <a href="{{ route('patients.details') }}" class="dashboard-recos__action">Review</a>
+                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
                     </li>
 
                     <li class="dashboard-recos__item">
@@ -149,7 +149,7 @@
                             <strong>Mohamed Larbi</strong>
                             <span>Suggested: Follow-up imaging &middot; Locally Advanced</span>
                         </div>
-                        <a href="{{ route('patients.details') }}" class="dashboard-recos__action">Review</a>
+                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
                     </li>
 
                 </ul>

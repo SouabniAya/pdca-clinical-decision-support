@@ -1,4 +1,3 @@
-
 @extends('layouts.app')
 
 @section('title', 'My Profile')
@@ -81,7 +80,7 @@
                 </p>
 
                 <p class="doctor-profile-card__speciality">
-                    Medical Doctor
+                    {{ $doctor['specialty'] }}
                 </p>
 
             </div>
@@ -261,7 +260,7 @@
                     </span>
 
                     <strong>
-                        Medical Oncology
+                        {{ $doctor['specialty'] }}
                     </strong>
 
                 </div>
@@ -273,9 +272,9 @@
                         Hospital / Institution
                     </span>
 
-                    <strong>
-                        University Hospital
-                    </strong>
+                   <strong>
+    {{ $doctor['institution'] }}
+</strong>
 
                 </div>
 
@@ -287,7 +286,7 @@
                     </span>
 
                     <strong>
-                        MD-000000
+                        {{ $doctor['license_number'] }}
                     </strong>
 
                 </div>
@@ -384,4 +383,3 @@
 </div>
 
 @endsection
-

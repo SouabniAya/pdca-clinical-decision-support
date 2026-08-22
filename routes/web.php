@@ -2,85 +2,169 @@
 
 use Illuminate\Support\Facades\Route;
 
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\PatientController;
+use App\Http\Controllers\ClinicalDataController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\DoctorProfileController;
+use App\Http\Controllers\SettingsController;
+
+use App\Services\PdacRuleEngine;
+
+
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
+
+// Home
 Route::get('/', function () {
     return view('welcome');
-});
+})->name('home');
 
+
+// Login page
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
 
-Route::post('/login', function () {
-    // TODO: replace with real authentication logic (e.g. Auth::attempt)
-    return back()->withErrors(['id' => 'Invalid credentials.']);
-})->name('login.store');
 
+// Login submission
+Route::post('/login', [AuthController::class, 'login'])
+    ->name('login.store');
+
+
+// Forgot password
 Route::get('/password/forgot', function () {
     return 'TODO: forgot password page';
 })->name('password.request');
 
+
+// Google authentication
 Route::get('/auth/google', function () {
-    // TODO: wire up Socialite (or your OAuth provider) here
+    // TODO: wire up Socialite / Google OAuth
     return 'TODO: Google OAuth redirect';
 })->name('auth.google');
-Route::get('/patients', function () {
-    return view('patients.index');
-})->name('patients.index');
-Route::get('/patients/{id}', function ($id) {
-    return view('patients.details', ['id' => $id]);
-})->name('patients.show');
-Route::get('/patients/{id}/clinical-explanation', function ($id) {
-    return view('patients.clinical-explanation');
-})->name('patients.clinical-explanation');
-Route::get('/patients/{id}/clinical-data', function ($id) {
-    // TODO: replace with real patient / evaluation / comorbidity lookups
-    $patient = ['id' => $id, 'name' => 'Patient #' . $id];
-    $comorbidities = [
-        ['id' => 1, 'label' => 'Diabetes mellitus'],
-        ['id' => 2, 'label' => 'Hypertension'],
-        ['id' => 3, 'label' => 'Chronic kidney disease'],
-        ['id' => 4, 'label' => 'Cardiovascular disease'],
-    ];
-    return view('patients.clinical-form', [
-        'patient' => $patient,
-        'comorbidities' => $comorbidities,
-        'evaluation' => null,
-        'selectedComorbidities' => [],
-    ]);
-})->name('clinical-data.edit');
-Route::match(['put', 'post'], '/patients/{id}/clinical-data', function ($id) {
-    // TODO: validate input (RF-04, RF-05, RF-07) and persist via the Model layer (EVALUATION_TUMORALE, CONSULTATION_COMORBIDITE)
-    return redirect('/patients/' . $id);
-})->name('clinical-data.store');
+
+
+/*
+|--------------------------------------------------------------------------
+| Patients
+|--------------------------------------------------------------------------
+*/
+
+
+Route::resource('patients', PatientController::class);
+
+
+// Clinical explanation
+Route::get(
+    '/patients/{id}/clinical-explanation',
+    function ($id) {
+        return view('patients.clinical-explanation');
+    }
+)->name('patients.clinical-explanation');
+
+
+// Clinical data - edit
+Route::get(
+    '/patients/{id}/clinical-data',
+    [ClinicalDataController::class, 'edit']
+)->name('clinical-data.edit');
+
+
+// Clinical data - store/update
+Route::match(
+    ['put', 'post'],
+    '/patients/{id}/clinical-data',
+    [ClinicalDataController::class, 'store']
+)->name('clinical-data.store');
+
+
+/*
+|--------------------------------------------------------------------------
+| Clinical Rules
+|--------------------------------------------------------------------------
+*/
+
+
 Route::get('/clinical-rules', function () {
     return view('patients.rules');
 })->name('rules.index');
-Route::get('/patients/details', function () {
-    return view('patients.details');
-})->name('patients.details');
-Route::get('/help', function () {
-    return view('pages.help');
-})->name('help');
+
+
+/*
+|--------------------------------------------------------------------------
+| Dashboard
+|--------------------------------------------------------------------------
+*/
+
+
 Route::get('/dashboard', function () {
     return view('patients.dashboard');
 })->name('dashboard');
-Route::get('/settings', function () {
-    return view('patients.settings');
-})->name('settings');
 
-Route::get('/users', function () {
-    $users = [
-        ['id' => 'U00128', 'name' => 'Ahmed Benali', 'email' => 'na_benali@esi.dz', 'status' => 'Active', 'role' => 'Nurse'],
-        ['id' => 'U00129', 'name' => 'Sarah Kaci', 'email' => 's_kaci@esi.dz', 'status' => 'Active', 'role' => 'Doctor'],
-        ['id' => 'U00130', 'name' => 'Yacine Meziane', 'email' => 'y_meziane@esi.dz', 'status' => 'Active', 'role' => 'Nurse'],
-        ['id' => 'U00131', 'name' => 'Lina Belkacem', 'email' => 'l_belkacem@esi.dz', 'status' => 'Inactive', 'role' => 'Administrator'],
-        ['id' => 'U00132', 'name' => 'Karim Zerouali', 'email' => 'k_zerouali@esi.dz', 'status' => 'Active', 'role' => 'Doctor'],
-        ['id' => 'U00133', 'name' => 'Nadia Bouzid', 'email' => 'n_bouzid@esi.dz', 'status' => 'Active', 'role' => 'Nurse'],
-    ];
-    return view('users.index', ['users' => $users]);
-})->name('users.index');
 
-use App\Services\PdacRuleEngine;
+/*
+|--------------------------------------------------------------------------
+| Help
+|--------------------------------------------------------------------------
+*/
+
+
+Route::get('/help', function () {
+    return view('pages.help');
+})->name('help');
+
+
+/*
+|--------------------------------------------------------------------------
+| Users
+|--------------------------------------------------------------------------
+*/
+
+
+Route::get('/users', [UserController::class, 'index'])
+    ->name('users.index');
+
+Route::get('/users/create', [UserController::class, 'create'])
+    ->name('users.create');
+
+Route::post('/users', [UserController::class, 'store'])
+    ->name('users.store');
+
+Route::get('/users/{id}', [UserController::class, 'show'])
+    ->name('users.show');
+
+Route::get('/users/{id}/edit', [UserController::class, 'edit'])
+    ->name('users.edit');
+
+Route::put('/users/{id}', [UserController::class, 'update'])
+    ->name('users.update');
+
+Route::delete('/users/{id}', [UserController::class, 'destroy'])
+    ->name('users.destroy');
+
+
+/*
+|--------------------------------------------------------------------------
+| Doctor
+|--------------------------------------------------------------------------
+*/
+
+
+Route::get('/doctor/profile', [DoctorProfileController::class, 'show'])
+    ->name('doctor.profile');
+
+
+/*
+|--------------------------------------------------------------------------
+| Recommendations
+|--------------------------------------------------------------------------
+*/
+
 
 function pdacRecommendationsDemoData(): array
 {
@@ -95,6 +179,7 @@ function pdacRecommendationsDemoData(): array
             'consultation_date' => '10/08/2026',
             'updated_at' => '10/08/2026',
             'status' => 'Pending Review',
+
             'clinical' => [
                 'resectability' => 'resectable',
                 'performance_status' => 0,
@@ -108,6 +193,7 @@ function pdacRecommendationsDemoData(): array
                 'stable_16w_on_platinum' => false,
             ],
         ],
+
         [
             'id' => 2,
             'patient_id' => 'P00142',
@@ -118,6 +204,7 @@ function pdacRecommendationsDemoData(): array
             'consultation_date' => '14/08/2026',
             'updated_at' => '14/08/2026',
             'status' => 'Pending Review',
+
             'clinical' => [
                 'resectability' => 'resectable',
                 'performance_status' => 1,
@@ -131,6 +218,7 @@ function pdacRecommendationsDemoData(): array
                 'stable_16w_on_platinum' => false,
             ],
         ],
+
         [
             'id' => 3,
             'patient_id' => 'P00155',
@@ -141,6 +229,7 @@ function pdacRecommendationsDemoData(): array
             'consultation_date' => '05/08/2026',
             'updated_at' => '06/08/2026',
             'status' => 'Reviewed',
+
             'clinical' => [
                 'resectability' => 'borderline',
                 'performance_status' => 1,
@@ -154,6 +243,7 @@ function pdacRecommendationsDemoData(): array
                 'stable_16w_on_platinum' => false,
             ],
         ],
+
         [
             'id' => 4,
             'patient_id' => 'P00161',
@@ -164,6 +254,7 @@ function pdacRecommendationsDemoData(): array
             'consultation_date' => '02/08/2026',
             'updated_at' => '02/08/2026',
             'status' => 'Pending Review',
+
             'clinical' => [
                 'resectability' => 'locally_advanced',
                 'performance_status' => 0,
@@ -177,6 +268,7 @@ function pdacRecommendationsDemoData(): array
                 'stable_16w_on_platinum' => false,
             ],
         ],
+
         [
             'id' => 5,
             'patient_id' => 'P00173',
@@ -187,6 +279,7 @@ function pdacRecommendationsDemoData(): array
             'consultation_date' => '30/07/2026',
             'updated_at' => '31/07/2026',
             'status' => 'Reviewed',
+
             'clinical' => [
                 'resectability' => 'locally_advanced',
                 'performance_status' => 2,
@@ -200,6 +293,7 @@ function pdacRecommendationsDemoData(): array
                 'stable_16w_on_platinum' => false,
             ],
         ],
+
         [
             'id' => 6,
             'patient_id' => 'P00188',
@@ -210,6 +304,7 @@ function pdacRecommendationsDemoData(): array
             'consultation_date' => '28/07/2026',
             'updated_at' => '29/07/2026',
             'status' => 'Pending Review',
+
             'clinical' => [
                 'resectability' => 'metastatic',
                 'performance_status' => 1,
@@ -223,6 +318,7 @@ function pdacRecommendationsDemoData(): array
                 'stable_16w_on_platinum' => true,
             ],
         ],
+
         [
             'id' => 7,
             'patient_id' => 'P00190',
@@ -233,6 +329,7 @@ function pdacRecommendationsDemoData(): array
             'consultation_date' => '20/07/2026',
             'updated_at' => '22/07/2026',
             'status' => 'Reviewed',
+
             'clinical' => [
                 'resectability' => 'metastatic',
                 'performance_status' => 3,
@@ -249,59 +346,107 @@ function pdacRecommendationsDemoData(): array
     ];
 }
 
-function pdacStageLabel(array $clinical, ?string $abcType): string
-{
+
+function pdacStageLabel(
+    array $clinical,
+    ?string $abcType
+): string {
     $labels = [
         'resectable' => 'Resectable',
         'borderline' => 'Borderline',
         'locally_advanced' => 'Locally Advanced',
         'metastatic' => 'Metastatic',
     ];
-    $label = $labels[$clinical['resectability']] ?? $clinical['resectability'];
-    if ($clinical['resectability'] === 'resectable' && $abcType) {
+
+    $label = $labels[$clinical['resectability']]
+        ?? $clinical['resectability'];
+
+    if (
+        $clinical['resectability'] === 'resectable'
+        && $abcType
+    ) {
         $label .= " — Type {$abcType}";
     }
+
     return $label;
 }
 
+
 Route::get('/recommendations', function () {
+
     $data = pdacRecommendationsDemoData();
 
     $recommendations = array_map(function ($rec) {
-        $result = PdacRuleEngine::evaluate($rec['clinical']);
-        $rec['stage_label'] = pdacStageLabel($rec['clinical'], $result['abc_type']);
+
+        $result = PdacRuleEngine::evaluate(
+            $rec['clinical']
+        );
+
+        $rec['stage_label'] = pdacStageLabel(
+            $rec['clinical'],
+            $result['abc_type']
+        );
+
         return $rec;
+
     }, $data);
 
-    $pendingCount = count(array_filter($recommendations, fn ($r) => $r['status'] === 'Pending Review'));
+
+    $pendingCount = count(
+        array_filter(
+            $recommendations,
+            fn ($r) => $r['status'] === 'Pending Review'
+        )
+    );
+
 
     return view('recommendations.index', [
         'recommendations' => $recommendations,
         'pendingCount' => $pendingCount,
     ]);
+
 })->name('recommendations.index');
 
+
 Route::get('/recommendations/{id}', function ($id) {
+
     $data = pdacRecommendationsDemoData();
-    $rec = collect($data)->firstWhere('id', (int) $id);
+
+    $rec = collect($data)->firstWhere(
+        'id',
+        (int) $id
+    );
 
     if (! $rec) {
         abort(404);
     }
 
-    $result = PdacRuleEngine::evaluate($rec['clinical']);
-    $rec['stage_label'] = pdacStageLabel($rec['clinical'], $result['abc_type']);
+
+    $result = PdacRuleEngine::evaluate(
+        $rec['clinical']
+    );
+
+    $rec['stage_label'] = pdacStageLabel(
+        $rec['clinical'],
+        $result['abc_type']
+    );
+
 
     return view('recommendations.show', [
         'rec' => $rec,
         'result' => $result,
     ]);
+
 })->name('recommendations.show');
 
-// Route::put('/settings/profile', [SettingsController::class, 'updateProfile'])->name('settings.profile.update');
-// Route::put('/settings/password', [SettingsController::class, 'updatePassword'])->name('settings.password.update');
-// Route::put('/settings/preferences', [SettingsController::class, 'updatePreferences'])->name('settings.preferences.update');
-// TODO: uncomment once App\Http\Controllers\SettingsController exists
+
+/*
+|--------------------------------------------------------------------------
+| Reports
+|--------------------------------------------------------------------------
+*/
+
+
 function pdacReportsDemoData(): array
 {
     return [
@@ -315,6 +460,7 @@ function pdacReportsDemoData(): array
             'created_at' => '01/08/2026 09:15',
             'status' => 'completed',
         ],
+
         [
             'id' => 2,
             'name' => 'Consultations Overview — August',
@@ -325,6 +471,7 @@ function pdacReportsDemoData(): array
             'created_at' => '21/08/2026 08:40',
             'status' => 'completed',
         ],
+
         [
             'id' => 3,
             'name' => 'Patients Active Cohort',
@@ -335,6 +482,7 @@ function pdacReportsDemoData(): array
             'created_at' => '20/08/2026 17:05',
             'status' => 'pending',
         ],
+
         [
             'id' => 4,
             'name' => 'Clinical Rules Audit Log',
@@ -347,20 +495,8 @@ function pdacReportsDemoData(): array
         ],
     ];
 }
-Route::put('/settings/profile', function () {
-    // Placeholder — replace with real profile update logic later
-    return back();
-})->name('settings.profile.update');
 
-Route::put('/settings/password', function () {
-    // Placeholder — replace with real password update logic later
-    return back();
-})->name('settings.password.update');
 
-Route::put('/settings/preferences', function () {
-    // Placeholder — replace with real preferences update logic later
-    return back();
-})->name('settings.preferences.update');
 Route::get('/reports', function () {
 
     $stats = [
@@ -370,13 +506,27 @@ Route::get('/reports', function () {
         'total_conflicts' => 7,
     ];
 
+
     $doctors = [
-        (object) ['id' => 1, 'name' => 'Dr. Taieb'],
-        (object) ['id' => 2, 'name' => 'Dr. Souabni'],
-        (object) ['id' => 3, 'name' => 'Dr. Kaci'],
+        (object) [
+            'id' => 1,
+            'name' => 'Dr. Taieb',
+        ],
+
+        (object) [
+            'id' => 2,
+            'name' => 'Dr. Souabni',
+        ],
+
+        (object) [
+            'id' => 3,
+            'name' => 'Dr. Kaci',
+        ],
     ];
 
+
     $reports = pdacReportsDemoData();
+
 
     return view('patients.reports', [
         'stats' => $stats,
@@ -386,15 +536,45 @@ Route::get('/reports', function () {
 
 })->name('reports.index');
 
-Route::get('/reports/{id}/download', function ($id) {
-    $report = collect(pdacReportsDemoData())->firstWhere('id', (int) $id);
 
-    if (! $report) {
-        abort(404);
-    }
+/*
+|--------------------------------------------------------------------------
+| Admin Settings
+|--------------------------------------------------------------------------
+|
+| IMPORTANT:
+| These routes use the admin guard because SettingsController
+| works with the Admin model.
+|
+*/
 
-    return 'TODO: download report #' . $id;
-})->name('reports.download');
-Route::get('/doctor/profile', function () {
-    return view('patients.doctor-profile');
-})->name('doctor.profile');
+
+Route::middleware('auth:admin')->group(function () {
+
+    // Settings page
+    Route::get('/settings', [SettingsController::class, 'index'])
+        ->name('settings');
+
+
+    // Update admin profile
+    Route::put(
+        '/settings/profile',
+        [SettingsController::class, 'updateProfile']
+    )->name('settings.profile.update');
+
+
+    // Update admin password
+    Route::put(
+        '/settings/password',
+        [SettingsController::class, 'updatePassword']
+    )->name('settings.password.update');
+
+
+    // Deactivate admin account
+    Route::post(
+        '/settings/deactivate',
+        [SettingsController::class, 'deactivate']
+    )->name('settings.deactivate');
+});
+Route::get('/patients/{patient}/details', [PatientController::class, 'details'])
+    ->name('patients.details');
