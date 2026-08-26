@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DoctorProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ClinicalRuleController;
 use App\Http\Controllers\DashboardController;
 
 use App\Services\PdacRuleEngine;
@@ -104,9 +105,13 @@ Route::match(
 */
 
 
-Route::get('/clinical-rules', function () {
-    return view('patients.rules');
-})->name('rules.index');
+Route::get('/clinical-rules', [ClinicalRuleController::class, 'index'])->name('rules.index');
+Route::get('/clinical-rules/create', [ClinicalRuleController::class, 'create'])->name('rules.create');
+Route::post('/clinical-rules', [ClinicalRuleController::class, 'store'])->name('rules.store');
+Route::get('/clinical-rules/{id}', [ClinicalRuleController::class, 'show'])->name('rules.show');
+Route::get('/clinical-rules/{id}/edit', [ClinicalRuleController::class, 'edit'])->name('rules.edit');
+Route::match(['put', 'post'], '/clinical-rules/{id}', [ClinicalRuleController::class, 'update'])->name('rules.update');
+Route::delete('/clinical-rules/{id}', [ClinicalRuleController::class, 'destroy'])->name('rules.destroy');
 
 
 /*

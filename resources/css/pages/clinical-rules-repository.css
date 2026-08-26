@@ -249,7 +249,8 @@
   gap: 8px;
 }
 
-.crr-table__actions button {
+.crr-table__actions button,
+.crr-table__actions a {
   width: 32px;
   height: 32px;
   display: inline-flex;
@@ -286,4 +287,64 @@
 
 .crr-page__view-all:hover {
   text-decoration: underline;
+}
+
+/* Status badges
+   ========================================================================== */
+
+.crr-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill, 999px);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 12.5px;
+}
+
+.crr-badge--active {
+  background: rgba(14, 124, 158, 0.1);
+  color: var(--color-cerulean);
+}
+
+.crr-badge--inactive {
+  background: var(--color-neutral-100, #F1F1F1);
+  color: var(--color-neutral-500);
+}
+
+/* Alerts
+   ========================================================================== */
+
+.crr-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.crr-alert--success {
+  background: rgba(14, 124, 158, 0.08);
+  border: 1px solid var(--color-cerulean);
+  color: var(--color-deep-navy);
+}
+
+.crr-table__actions form {
+  margin: 0;
+}
+
+.crr-table__actions button[type="submit"] {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-neutral-300);
+  border-radius: 8px;
+  background: var(--color-white);
+  cursor: pointer;
+  color: var(--color-danger, #C0392B);
+}
+.crr-table__actions button[type="submit"] svg {
+  width: 16px;
+  height: 16px;
 }

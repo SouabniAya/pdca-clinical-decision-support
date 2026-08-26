@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\ClinicalRule;
+
 /**
  * PDAC Clinical Rule Engine
  *
@@ -174,14 +176,26 @@ class PdacRuleEngine
         return 'A';
     }
 
+    /**
+     * Build the traceable rule result. If a matching, active row exists
+     * in `clinical_rule`, its editable content (recommendation,
+     * justification, source, grade) takes precedence — this is what
+     * makes the Clinical Rules Repository admin CRUD actually affect
+     * the recommendations shown to clinicians. The hardcoded values
+     * passed in remain the fallback (used if the row is missing,
+     * deactivated, or the DB isn't available — e.g. in isolated unit
+     * tests of this class per RNF-09).
+     */
     private static function rule(string $id, string $recommendation, string $justification, string $source, string $grade): array
     {
+        $dbRule = ClinicalRule::where('rule_id', $id)->where('active', true)->first();
+
         return [
             'rule_id' => $id,
-            'recommendation' => $recommendation,
-            'justification' => $justification,
-            'source' => $source,
-            'grade' => $grade,
+            'recommendation' => $dbRule->recommendation ?? $recommendation,
+            'justification' => $dbRule->justification ?? $justification,
+            'source' => $dbRule->source ?? $source,
+            'grade' => $dbRule->grade ?? $grade,
         ];
     }
 }
