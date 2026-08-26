@@ -7,6 +7,7 @@ use App\Models\Consultation;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\TumorEvaluation;
+use App\Services\RecommendationGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -74,7 +75,9 @@ class ClinicalDataController extends Controller
                 ->withErrors(['doctor' => 'No doctor found in the system. Please create a doctor record first.']);
         }
 
-        DB::transaction(function () use ($data, $patient, $doctorId, $request) {
+        $consultationId = null;
+
+        DB::transaction(function () use ($data, $patient, $doctorId, $request, &$consultationId) {
             $consultation = Consultation::create([
                 'patient_id' => $patient->patient_id,
                 'doctor_id' => $doctorId,
@@ -106,10 +109,17 @@ class ClinicalDataController extends Controller
             if (! empty($pivotData)) {
                 $consultation->comorbidities()->attach($pivotData);
             }
+
+            $consultationId = $consultation->consultation_id;
         });
 
+        // RF-11 — the system automatically proposes a recommendation
+        // as soon as the clinical evaluation has been entered.
+        $consultation = Consultation::findOrFail($consultationId);
+        $recommendation = RecommendationGenerator::generateAndStore($consultation);
+
         return redirect()
-            ->route('patients.show', $patient->patient_id)
-            ->with('success', 'Clinical data saved.');
+            ->route('recommendations.show', $recommendation->recommendation_id)
+            ->with('success', 'Clinical data saved and recommendation generated.');
     }
 }

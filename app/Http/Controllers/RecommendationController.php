@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Consultation;
+use App\Models\Recommendation;
+use App\Services\RecommendationGenerator;
+use Illuminate\Http\Request;
+
+class RecommendationController extends Controller
+{
+    /**
+     * List every recommendation currently in the system, most recent first.
+     */
+    public function index(Request $request)
+    {
+        $query = Recommendation::with(['consultation.patient', 'consultation.doctor.user']);
+
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
+        if ($search = $request->input('search')) {
+            $query->whereHas('consultation.patient', function ($q) use ($search) {
+                $q->where('first_name', 'like', "%$search%")
+                  ->orWhere('last_name', 'like', "%$search%")
+                  ->orWhere('medical_record_number', 'like', "%$search%");
+            });
+        }
+
+        $rows = $query->orderByDesc('generation_date')->get();
+
+        $recommendations = $rows->map(function (Recommendation $rec) {
+            $patient = $rec->consultation->patient;
+            $doctorUser = $rec->consultation->doctor->user ?? null;
+
+            return [
+                'id' => $rec->recommendation_id,
+                'patient_id' => 'P' . str_pad((string) $patient->patient_id, 5, '0', STR_PAD_LEFT),
+                'patient_name' => trim($patient->first_name . ' ' . $patient->last_name),
+                'age' => $patient->age,
+                'status' => $rec->status_label,
+                'stage_label' => $this->stageLabel($rec),
+                'updated_at' => optional($rec->generation_date)->format('d/m/Y'),
+            ];
+        });
+
+        $pendingCount = $rows->where('status', Recommendation::STATUS_PROPOSED)->count();
+
+        return view('recommendations.index', [
+            'recommendations' => $recommendations,
+            'pendingCount' => $pendingCount,
+        ]);
+    }
+
+    /**
+     * Show the full traceable detail of a single recommendation.
+     */
+    public function show($id)
+    {
+        $rec = Recommendation::with([
+            'consultation.patient',
+            'consultation.doctor.user',
+            'consultation.tumorEvaluation',
+            'consultation.comorbidities',
+        ])->findOrFail($id);
+
+        $consultation = $rec->consultation;
+        $patient = $consultation->patient;
+        $evaluation = $consultation->tumorEvaluation;
+        $doctorUser = $consultation->doctor->user ?? null;
+
+        $recData = [
+            'id' => $rec->recommendation_id,
+            'patient_name' => trim($patient->first_name . ' ' . $patient->last_name),
+            'dossier_id' => 'PDAC-' . str_pad((string) $patient->patient_id, 4, '0', STR_PAD_LEFT),
+            'age' => $patient->age,
+            'doctor' => $doctorUser ? 'Dr. ' . trim($doctorUser->first_name . ' ' . $doctorUser->last_name) : 'Unassigned',
+            'consultation_date' => $consultation->consultation_date?->format('d/m/Y'),
+            'stage_label' => $this->stageLabel($rec),
+            'status' => $rec->status,
+            'clinical' => [
+                'performance_status' => $consultation->performance_status,
+                'ca19_9' => $evaluation->ca19_9_level,
+                'cholestasis' => (bool) $evaluation->cholestasis,
+                'bilirubin_elevated' => false,
+                'severe_comorbidities' => $consultation->comorbidities->contains(fn ($c) => $c->pivot->severity === 'severe'),
+                'surgical_contraindication' => (bool) $evaluation->surgery_contraindication,
+            ],
+        ];
+
+        $result = [
+            'rule_id' => $rec->rule_id,
+            'recommendation' => $rec->recommendation_text,
+            'justification' => $rec->justification,
+            'source' => $rec->source,
+            'grade' => $rec->grade,
+            'abc_type' => $rec->abc_type,
+            'conflict' => $rec->conflict,
+            'conflict_reason' => $rec->conflict_reason,
+            'transversal_note' => $rec->details['transversal_note'] ?? null,
+            'overlay_rule' => $rec->details['overlay_rule'] ?? null,
+        ];
+
+        return view('recommendations.show', [
+            'rec' => $recData,
+            'result' => $result,
+        ]);
+    }
+
+    /**
+     * Generate a fresh recommendation for a consultation that doesn't
+     * have one yet (used right after clinical data entry — RF-11).
+     */
+    public function generate($consultationId)
+    {
+        $consultation = Consultation::findOrFail($consultationId);
+
+        $rec = RecommendationGenerator::generateAndStore($consultation);
+
+        return redirect()
+            ->route('recommendations.show', $rec->recommendation_id)
+            ->with('success', 'Recommendation generated.');
+    }
+
+    /**
+     * RF-13 — clinician validates the proposed recommendation.
+     */
+    public function validateRecommendation($id)
+    {
+        $rec = Recommendation::findOrFail($id);
+        $rec->status = Recommendation::STATUS_VALIDATED;
+        $rec->save();
+
+        return back()->with('success', 'Recommendation validated.');
+    }
+
+    /**
+     * RF-13 — clinician rejects the proposed recommendation.
+     */
+    public function reject($id)
+    {
+        $rec = Recommendation::findOrFail($id);
+        $rec->status = Recommendation::STATUS_REJECTED;
+        $rec->save();
+
+        return back()->with('success', 'Recommendation rejected.');
+    }
+
+    /**
+     * RF-13 / RF-16 — ambiguous or contested case referred to the
+     * multidisciplinary team meeting (RCP).
+     */
+    public function sendToRcp($id)
+    {
+        $rec = Recommendation::findOrFail($id);
+        $rec->status = Recommendation::STATUS_RCP;
+        $rec->save();
+
+        return back()->with('success', 'Recommendation sent to RCP.');
+    }
+
+    private function stageLabel(Recommendation $rec): string
+    {
+        $labels = [
+            'resectable' => 'Resectable',
+            'borderline' => 'Borderline',
+            'locally_advanced' => 'Locally Advanced',
+            'metastatic' => 'Metastatic',
+        ];
+
+        $resectability = $rec->consultation->tumorEvaluation->resectability ?? null;
+        $label = $labels[$resectability] ?? ($resectability ?? 'Unknown');
+
+        if ($resectability === 'resectable' && $rec->abc_type) {
+            $label .= " — Type {$rec->abc_type}";
+        }
+
+        return $label;
+    }
+}

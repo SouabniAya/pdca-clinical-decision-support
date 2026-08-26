@@ -140,7 +140,7 @@ class SettingsController extends Controller
     {
         $admin = Auth::guard('admin')->user();
 
-        $admin->is_active = false;
+        $admin->active = false;
 
         $admin->save();
 

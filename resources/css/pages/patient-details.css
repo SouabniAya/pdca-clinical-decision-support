@@ -645,6 +645,10 @@
   margin: 0 auto;
   width: 100%;
 }
+.pd-action-bar form {
+  margin: 0;
+  display: flex;
+}
 .pd-action-bar .pd-btn {
   justify-content: center;
   text-align: center;
