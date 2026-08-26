@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Consultation;
 use App\Models\Recommendation;
 use App\Services\RecommendationGenerator;
@@ -118,6 +119,15 @@ class RecommendationController extends Controller
 
         $rec = RecommendationGenerator::generateAndStore($consultation);
 
+        $patient = $consultation->patient;
+
+        ActivityLog::log(
+            ActivityLog::TYPE_RECOMMENDATION_GENERATED,
+            'New recommendation generated for <strong>' . e(trim($patient->first_name . ' ' . $patient->last_name)) . '</strong>',
+            'Awaiting clinician review',
+            $patient->patient_id
+        );
+
         return redirect()
             ->route('recommendations.show', $rec->recommendation_id)
             ->with('success', 'Recommendation generated.');
@@ -128,9 +138,11 @@ class RecommendationController extends Controller
      */
     public function validateRecommendation($id)
     {
-        $rec = Recommendation::findOrFail($id);
+        $rec = Recommendation::with('consultation.patient')->findOrFail($id);
         $rec->status = Recommendation::STATUS_VALIDATED;
         $rec->save();
+
+        $this->logStatusChange($rec, 'Validated');
 
         return back()->with('success', 'Recommendation validated.');
     }
@@ -140,9 +152,11 @@ class RecommendationController extends Controller
      */
     public function reject($id)
     {
-        $rec = Recommendation::findOrFail($id);
+        $rec = Recommendation::with('consultation.patient')->findOrFail($id);
         $rec->status = Recommendation::STATUS_REJECTED;
         $rec->save();
+
+        $this->logStatusChange($rec, 'Rejected');
 
         return back()->with('success', 'Recommendation rejected.');
     }
@@ -153,11 +167,25 @@ class RecommendationController extends Controller
      */
     public function sendToRcp($id)
     {
-        $rec = Recommendation::findOrFail($id);
+        $rec = Recommendation::with('consultation.patient')->findOrFail($id);
         $rec->status = Recommendation::STATUS_RCP;
         $rec->save();
 
+        $this->logStatusChange($rec, 'Sent to RCP');
+
         return back()->with('success', 'Recommendation sent to RCP.');
+    }
+
+    private function logStatusChange(Recommendation $rec, string $newStatusLabel): void
+    {
+        $patient = $rec->consultation->patient;
+
+        ActivityLog::log(
+            ActivityLog::TYPE_RECOMMENDATION_STATUS_CHANGED,
+            '<strong>' . e(trim($patient->first_name . ' ' . $patient->last_name)) . "</strong>'s recommendation was " . strtolower($newStatusLabel),
+            null,
+            $patient->patient_id
+        );
     }
 
     private function stageLabel(Recommendation $rec): string

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Patient;
 use App\Models\Recommendation;
 use Illuminate\Http\Request;
@@ -57,7 +58,16 @@ class PatientController extends Controller
             'medical_record_number' => 'required|string|max:50|unique:patient,medical_record_number',
         ]);
 
-        Patient::create($data);
+        $data['created_at'] = now();
+
+        $patient = Patient::create($data);
+
+        ActivityLog::log(
+            ActivityLog::TYPE_PATIENT_CREATED,
+            'New patient <strong>' . e(trim($patient->first_name . ' ' . $patient->last_name)) . '</strong> was registered',
+            null,
+            $patient->patient_id
+        );
 
         return redirect()->route('patients.index')->with('success', 'Patient ajouté.');
     }
@@ -88,7 +98,26 @@ public function update(Request $request, $id)
             'medical_record_number' => 'required|string|max:50|unique:patient,medical_record_number,' . $id . ',patient_id',
         ]);
 
+        $previousStatus = $patient->status;
+        $name = e(trim($patient->first_name . ' ' . $patient->last_name));
+
         $patient->update($data);
+
+        if ($previousStatus !== $data['status']) {
+            ActivityLog::log(
+                ActivityLog::TYPE_STATUS_CHANGED,
+                "<strong>{$name}</strong>'s status changed to " . ucfirst($data['status']),
+                'Previously ' . ucfirst($previousStatus),
+                $patient->patient_id
+            );
+        } else {
+            ActivityLog::log(
+                ActivityLog::TYPE_PATIENT_UPDATED,
+                "<strong>{$name}</strong>'s record was updated",
+                null,
+                $patient->patient_id
+            );
+        }
 
         return redirect()->route('patients.index')->with('success', 'Patient mis à jour.');
     }

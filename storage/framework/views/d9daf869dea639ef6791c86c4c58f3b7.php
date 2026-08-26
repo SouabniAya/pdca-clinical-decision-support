@@ -129,6 +129,7 @@
 
                             <div class="patient-actions-menu" id="menu-<?php echo e($patient->patient_id); ?>" style="display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid #e2e2e2;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.1);z-index:20;min-width:130px;overflow:hidden;">
                                 <a href="<?php echo e(route('patients.edit', $patient->patient_id)); ?>" style="display:block;padding:10px 14px;color:#1a1a1a;text-decoration:none;font-size:14px;">Edit</a>
+                                <a href="<?php echo e(route('clinical-data.edit', $patient->patient_id)); ?>" style="display:block;padding:10px 14px;color:#1a1a1a;text-decoration:none;font-size:14px;border-top:1px solid #f0f0f0;">Enter Clinical Data</a>
                                 <form method="POST" action="<?php echo e(route('patients.destroy', $patient->patient_id)); ?>" onsubmit="return confirm('Delete this patient? This cannot be undone.');">
                                     <?php echo csrf_field(); ?>
                                     <?php echo method_field('DELETE'); ?>

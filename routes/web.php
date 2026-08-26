@@ -9,6 +9,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\DoctorProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\DashboardController;
 
 use App\Services\PdacRuleEngine;
 
@@ -103,9 +104,8 @@ Route::get('/clinical-rules', function () {
 */
 
 
-Route::get('/dashboard', function () {
-    return view('patients.dashboard');
-})->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
 
 
 /*

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\Comorbidity;
 use App\Models\Consultation;
 use App\Models\Doctor;
@@ -112,6 +113,13 @@ class ClinicalDataController extends Controller
 
             $consultationId = $consultation->consultation_id;
         });
+
+        ActivityLog::log(
+            ActivityLog::TYPE_CLINICAL_DATA_UPDATED,
+            '<strong>' . e(trim($patient->first_name . ' ' . $patient->last_name)) . '</strong>\'s clinical data was updated',
+            $data['clinical_stage'] ? 'Stage changed to ' . $data['clinical_stage'] : null,
+            $patient->patient_id
+        );
 
         // RF-11 — the system automatically proposes a recommendation
         // as soon as the clinical evaluation has been entered.

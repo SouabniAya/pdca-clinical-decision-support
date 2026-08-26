@@ -27,7 +27,7 @@
             </span>
             <div class="dashboard-stat-card__body">
                 <h3>Registered Patients</h3>
-                <strong>128</strong>
+                <strong>{{ $stats['total'] }}</strong>
                 <span>Total patients</span>
             </div>
         </div>
@@ -38,7 +38,7 @@
             </span>
             <div class="dashboard-stat-card__body">
                 <h3>Active Patients</h3>
-                <strong>96</strong>
+                <strong>{{ $stats['active'] }}</strong>
                 <span>Currently active</span>
             </div>
         </div>
@@ -49,7 +49,7 @@
             </span>
             <div class="dashboard-stat-card__body">
                 <h3>Recommendations</h3>
-                <strong>15</strong>
+                <strong>{{ $stats['pending_recommendations'] }}</strong>
                 <span>Awaiting review</span>
             </div>
         </div>
@@ -60,7 +60,7 @@
             </span>
             <div class="dashboard-stat-card__body">
                 <h3>New Patients</h3>
-                <strong>8</strong>
+                <strong>{{ $stats['new_this_month'] }}</strong>
                 <span>This month</span>
             </div>
         </div>
@@ -76,7 +76,7 @@
             <div class="dashboard-card">
                 <div class="dashboard-card__head">
                     <h2>Patients by Status</h2>
-                    <span class="dashboard-card__subtitle">Distribution across all 128 patients</span>
+                    <span class="dashboard-card__subtitle">Distribution across all {{ $statusBreakdown['total'] }} patients</span>
                 </div>
 
                 <div class="dashboard-donut">
@@ -84,29 +84,25 @@
                         {{-- background track --}}
                         <circle cx="90" cy="90" r="70" fill="none" stroke="var(--color-neutral-100)" stroke-width="22"/>
 
-                        {{-- Active : 65% --}}
+                        {{-- Active --}}
                         <circle cx="90" cy="90" r="70" fill="none" stroke="var(--color-cerulean)" stroke-width="22"
-                                stroke-dasharray="285.9 439.8" stroke-dashoffset="0"
+                                stroke-dasharray="{{ $statusBreakdown['active']['dasharray'] }} {{ $statusBreakdown['circumference'] }}"
+                                stroke-dashoffset="0"
                                 stroke-linecap="round" transform="rotate(-90 90 90)"/>
 
-                        {{-- Inactive : 20% --}}
+                        {{-- Inactive --}}
                         <circle cx="90" cy="90" r="70" fill="none" stroke="var(--color-sky)" stroke-width="22"
-                                stroke-dasharray="87.96 439.8" stroke-dashoffset="-285.9"
+                                stroke-dasharray="{{ $statusBreakdown['inactive']['dasharray'] }} {{ $statusBreakdown['circumference'] }}"
+                                stroke-dashoffset="-{{ $statusBreakdown['active']['dasharray'] }}"
                                 stroke-linecap="round" transform="rotate(-90 90 90)"/>
 
-                        {{-- Archived : 15% --}}
-                        <circle cx="90" cy="90" r="70" fill="none" stroke="var(--color-neutral-300)" stroke-width="22"
-                                stroke-dasharray="65.97 439.8" stroke-dashoffset="-373.86"
-                                stroke-linecap="round" transform="rotate(-90 90 90)"/>
-
-                        <text x="90" y="84" text-anchor="middle" class="dashboard-donut__value">128</text>
+                        <text x="90" y="84" text-anchor="middle" class="dashboard-donut__value">{{ $statusBreakdown['total'] }}</text>
                         <text x="90" y="104" text-anchor="middle" class="dashboard-donut__label">Patients</text>
                     </svg>
 
                     <ul class="dashboard-donut__legend">
-                        <li><span class="dashboard-donut__dot" style="background: var(--color-cerulean)"></span>Active <strong>65%</strong></li>
-                        <li><span class="dashboard-donut__dot" style="background: var(--color-sky)"></span>Inactive <strong>20%</strong></li>
-                        <li><span class="dashboard-donut__dot" style="background: var(--color-neutral-300)"></span>Archived <strong>15%</strong></li>
+                        <li><span class="dashboard-donut__dot" style="background: var(--color-cerulean)"></span>Active <strong>{{ $statusBreakdown['active']['pct'] }}%</strong></li>
+                        <li><span class="dashboard-donut__dot" style="background: var(--color-sky)"></span>Inactive <strong>{{ $statusBreakdown['inactive']['pct'] }}%</strong></li>
                     </ul>
                 </div>
             </div>
@@ -115,46 +111,35 @@
             <div class="dashboard-card">
                 <div class="dashboard-card__head">
                     <h2>Recommendations to Review</h2>
-                    <span class="dashboard-card__subtitle">15 recommendations awaiting clinician validation</span>
+                    <span class="dashboard-card__subtitle">{{ $stats['pending_recommendations'] }} recommendations awaiting clinician validation</span>
                 </div>
 
                 <ul class="dashboard-recos">
 
-                    <li class="dashboard-recos__item">
-                        <div class="dashboard-recos__info">
-                            <strong>Yasmine Cherif</strong>
-                            <span>Suggested: Neoadjuvant chemotherapy &middot; Locally Advanced</span>
-                        </div>
-                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
-                    </li>
-
-                    <li class="dashboard-recos__item">
-                        <div class="dashboard-recos__info">
-                            <strong>Karim Ferhat</strong>
-                            <span>Suggested: Surgical resection &middot; Localized</span>
-                        </div>
-                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
-                    </li>
-
-                    <li class="dashboard-recos__item">
-                        <div class="dashboard-recos__info">
-                            <strong>Sofia Amrani</strong>
-                            <span>Suggested: Radiotherapy &middot; Metastatic</span>
-                        </div>
-                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
-                    </li>
-
-                    <li class="dashboard-recos__item">
-                        <div class="dashboard-recos__info">
-                            <strong>Mohamed Larbi</strong>
-                            <span>Suggested: Follow-up imaging &middot; Locally Advanced</span>
-                        </div>
-                        <a href="{{ route('patients.details', 1) }}" class="dashboard-recos__action">Review</a>
-                    </li>
+                    @forelse ($pendingRecommendations as $item)
+                        <li class="dashboard-recos__item">
+                            <div class="dashboard-recos__info">
+                                <strong>{{ $item['patient_name'] }}</strong>
+                                <span>
+                                    Suggested: {{ $item['recommendation_text'] ?? 'Pending analysis' }}
+                                    @if ($item['stage'])
+                                        &middot; {{ $item['stage'] }}
+                                    @endif
+                                </span>
+                            </div>
+                            <a href="{{ route('patients.details', $item['patient_id']) }}" class="dashboard-recos__action">Review</a>
+                        </li>
+                    @empty
+                        <li class="dashboard-recos__item">
+                            <div class="dashboard-recos__info">
+                                <span>No recommendations awaiting review.</span>
+                            </div>
+                        </li>
+                    @endforelse
 
                 </ul>
 
-                <a href="{{ route('patients.index') }}" class="dashboard-activity__view-all">View All Recommendations</a>
+                <a href="{{ route('recommendations.index') }}" class="dashboard-activity__view-all">View All Recommendations</a>
             </div>
 
         </div>
@@ -168,115 +153,40 @@
 
             <ul class="dashboard-activity">
 
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--update">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p><strong>Ahmed Benali</strong>'s clinical data was updated</p>
-                        <span>Stage changed to Locally Advanced &middot; 2 hours ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--recommendation">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 12l2.5 2.5L16 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p>New recommendation generated for <strong>Yasmine Cherif</strong></p>
-                        <span>Awaiting clinician review &middot; 5 hours ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--new">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p>New patient <strong>Karim Ferhat</strong> was registered</p>
-                        <span>Added by Dr. Meziane &middot; 1 day ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--status">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p><strong>Sofia Amrani</strong>'s status changed to Active</p>
-                        <span>Previously Inactive &middot; 1 day ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--update">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p><strong>Mohamed Larbi</strong>'s exam results were updated</p>
-                        <span>New lab results attached &middot; 2 days ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--recommendation">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 12l2.5 2.5L16 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p>New recommendation generated for <strong>Karim Ferhat</strong></p>
-                        <span>Awaiting clinician review &middot; 2 days ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--status">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p><strong>Nadia Boukhalfa</strong>'s status changed to Archived</p>
-                        <span>Treatment completed &middot; 3 days ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--new">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p>New patient <strong>Leila Haddad</strong> was registered</p>
-                        <span>Added by Dr. Belkacem &middot; 3 days ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--update">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p><strong>Yasmine Cherif</strong>'s clinical data was updated</p>
-                        <span>Age and exam results corrected &middot; 4 days ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--status">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p><strong>Ahmed Benali</strong>'s status changed to Active</p>
-                        <span>Previously Inactive &middot; 4 days ago</span>
-                    </div>
-                </li>
-
-                <li class="dashboard-activity__item">
-                    <span class="dashboard-activity__icon dashboard-activity__icon--recommendation">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 12l2.5 2.5L16 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </span>
-                    <div class="dashboard-activity__body">
-                        <p>New recommendation generated for <strong>Sofia Amrani</strong></p>
-                        <span>Awaiting clinician review &middot; 5 days ago</span>
-                    </div>
-                </li>
+                @forelse ($recentActivity as $activity)
+                    <li class="dashboard-activity__item">
+                        <span class="dashboard-activity__icon dashboard-activity__icon--{{ $activity->icon }}">
+                            @switch($activity->icon)
+                                @case('new')
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                                    @break
+                                @case('recommendation')
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 12l2.5 2.5L16 9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    @break
+                                @case('status')
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    @break
+                                @default
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 20l4-1 10-10-3-3L5 16l-1 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+                            @endswitch
+                        </span>
+                        <div class="dashboard-activity__body">
+                            <p>{!! $activity->message !!}</p>
+                            <span>
+                                @if ($activity->detail)
+                                    {{ $activity->detail }} &middot;
+                                @endif
+                                {{ $activity->created_at->diffForHumans() }}
+                            </span>
+                        </div>
+                    </li>
+                @empty
+                    <li class="dashboard-activity__item">
+                        <div class="dashboard-activity__body">
+                            <p>No recent activity yet.</p>
+                        </div>
+                    </li>
+                @endforelse
 
             </ul>
 

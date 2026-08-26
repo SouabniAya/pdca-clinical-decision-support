@@ -30,6 +30,10 @@
                 <span>Responsible Doctor</span>
                 <strong><?php echo e($latest && $latest->doctor ? $latest->doctor->name : 'Unassigned'); ?></strong>
             </div>
+            <a href="<?php echo e(route('clinical-data.edit', $patient->patient_id)); ?>" class="pd-btn pd-btn--outline">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                Enter Clinical Data
+            </a>
             <a href="<?php echo e(route('patients.edit', $patient->patient_id)); ?>" class="pd-btn pd-btn--outline">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 21h4l11-11-4-4L4 17v4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
                 Edit Patient
