@@ -175,9 +175,21 @@
     
     <div class="pd-action-bar">
         <a href="<?php echo e(route('recommendations.index')); ?>" class="pd-btn pd-btn--outline">Back to List</a>
-        <a href="#" class="pd-btn pd-btn--outline">Reject</a>
-        <a href="#" class="pd-btn pd-btn--outline">Send to RCP</a>
-        <a href="#" class="pd-btn pd-btn--primary">Validate Recommendation</a>
+
+        <form method="POST" action="<?php echo e(route('recommendations.reject', $rec['id'])); ?>">
+            <?php echo csrf_field(); ?>
+            <button type="submit" class="pd-btn pd-btn--outline pd-btn--block">Reject</button>
+        </form>
+
+        <form method="POST" action="<?php echo e(route('recommendations.rcp', $rec['id'])); ?>">
+            <?php echo csrf_field(); ?>
+            <button type="submit" class="pd-btn pd-btn--outline pd-btn--block">Send to RCP</button>
+        </form>
+
+        <form method="POST" action="<?php echo e(route('recommendations.validate', $rec['id'])); ?>">
+            <?php echo csrf_field(); ?>
+            <button type="submit" class="pd-btn pd-btn--primary pd-btn--block">Validate Recommendation</button>
+        </form>
     </div>
 
 </div>

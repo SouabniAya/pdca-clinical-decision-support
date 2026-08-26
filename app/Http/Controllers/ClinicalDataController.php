@@ -15,6 +15,33 @@ use Illuminate\Support\Facades\DB;
 class ClinicalDataController extends Controller
 {
     /**
+     * Generic entry point (sidebar link) — no patient chosen yet.
+     * Shows the same form with a required patient picker at the top.
+     */
+    public function create()
+    {
+        $patients = Patient::orderBy('first_name')->orderBy('last_name')->get()->map(function ($p) {
+            return [
+                'id' => $p->patient_id,
+                'name' => trim($p->first_name . ' ' . $p->last_name),
+                'mrn' => $p->medical_record_number,
+            ];
+        })->all();
+
+        $comorbidities = Comorbidity::orderBy('label')->get()->map(function ($c) {
+            return ['id' => $c->comorbidity_id, 'label' => $c->label];
+        })->all();
+
+        return view('patients.clinical-form', [
+            'patient' => null,
+            'patients' => $patients,
+            'comorbidities' => $comorbidities,
+            'evaluation' => null,
+            'selectedComorbidities' => [],
+        ]);
+    }
+
+    /**
      * Show the blank clinical data form for a patient.
      * Every submission creates a NEW consultation + evaluation,
      * so this form is always blank (no pre-filled $evaluation).
@@ -34,10 +61,22 @@ class ClinicalDataController extends Controller
 
         return view('patients.clinical-form', [
             'patient' => $patient,
+            'patients' => null,
             'comorbidities' => $comorbidities,
             'evaluation' => null,
             'selectedComorbidities' => [],
         ]);
+    }
+
+    /**
+     * Generic submit (from the sidebar entry point) — patient comes
+     * from the dropdown in the request body rather than the URL.
+     */
+    public function storeAny(Request $request)
+    {
+        $request->validate(['patient_id' => 'required|exists:patient,patient_id']);
+
+        return $this->persist($request, (int) $request->input('patient_id'));
     }
 
     /**
@@ -46,7 +85,12 @@ class ClinicalDataController extends Controller
      */
     public function store(Request $request, $id)
     {
-        $patient = Patient::findOrFail($id);
+        return $this->persist($request, (int) $id);
+    }
+
+    private function persist(Request $request, int $patientId)
+    {
+        $patient = Patient::findOrFail($patientId);
 
         $data = $request->validate([
             'consultation_date' => 'required|date',

@@ -10,15 +10,21 @@
     <div class="patients-page__head">
         <div>
             <h1>Clinical Data Entry</h1>
-            <p>Record or update the clinical assessment for {{ $patient['name'] ?? 'this patient' }} — resectability, performance status, CA19-9 and comorbidities.</p>
+            @if (!empty($patient))
+                <p>Record or update the clinical assessment for {{ $patient['name'] }} — resectability, performance status, CA19-9 and comorbidities.</p>
+            @else
+                <p>Choose a patient below, then record their clinical assessment — resectability, performance status, CA19-9 and comorbidities.</p>
+            @endif
         </div>
-        <a href="{{ url('/patients/' . ($patient['id'] ?? '')) }}" class="patients-page__btn patients-page__btn--ghost">
+        @if (!empty($patient))
+        <a href="{{ url('/patients/' . $patient['id']) }}" class="patients-page__btn patients-page__btn--ghost">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Back to Patient File
         </a>
+        @endif
     </div>
 
-    <form class="clinical-form" method="POST" action="{{ route('clinical-data.store', ['id' => $patient['id'] ?? null]) }}">
+    <form class="clinical-form" method="POST" action="{{ !empty($patient) ? route('clinical-data.store', ['id' => $patient['id']]) : route('clinical-data.storeAny') }}">
         @csrf
         @if (!empty($evaluation))
             @method('PUT')
@@ -26,6 +32,32 @@
 
         @if ($errors->any())
             <div class="clinical-form__error">{{ $errors->first() }}</div>
+        @endif
+
+        @if (empty($patient))
+        {{-- Patient selection --}}
+        <div class="clinical-form__section">
+            <div class="clinical-form__section-head">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <h2>Patient</h2>
+            </div>
+            <div class="clinical-form__grid">
+                <div class="clinical-form__field clinical-form__field--full">
+                    <label for="patient_id">Select patient</label>
+                    <select id="patient_id" name="patient_id" required>
+                        <option value="">Select a patient...</option>
+                        @foreach (($patients ?? []) as $p)
+                            <option value="{{ $p['id'] }}" @selected(old('patient_id') == $p['id'])>
+                                {{ $p['name'] }} — {{ $p['mrn'] }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @if (empty($patients))
+                        <p class="clinical-form__empty">No patients on record yet — add one from the Patients page first.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
         @endif
 
         {{-- Consultation --}}
@@ -171,7 +203,7 @@
         </div>
 
         <div class="clinical-form__actions">
-            <a href="{{ url('/patients/' . ($patient['id'] ?? '')) }}" class="clinical-form__cancel">Cancel</a>
+            <a href="{{ !empty($patient) ? url('/patients/' . $patient['id']) : url('/patients') }}" class="clinical-form__cancel">Cancel</a>
             <button type="submit" class="clinical-form__submit">Save Clinical Data</button>
         </div>
     </form>

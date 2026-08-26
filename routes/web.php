@@ -70,6 +70,18 @@ Route::get(
 )->name('patients.clinical-explanation');
 
 
+// Clinical data - generic entry point (patient chosen via dropdown)
+Route::get(
+    '/clinical-data',
+    [ClinicalDataController::class, 'create']
+)->name('clinical-data.create');
+
+Route::post(
+    '/clinical-data',
+    [ClinicalDataController::class, 'storeAny']
+)->name('clinical-data.storeAny');
+
+
 // Clinical data - edit
 Route::get(
     '/patients/{id}/clinical-data',
