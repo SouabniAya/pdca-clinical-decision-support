@@ -174,6 +174,16 @@
     </div>
 
     {{-- Action bar --}}
+    @if ($rec['status'] === 'rcp')
+        <div class="pd-action-bar" style="grid-template-columns: 1fr 1.4fr;">
+            <a href="{{ route('recommendations.index') }}" class="pd-btn pd-btn--outline">Back to List</a>
+            @if ($rec['rcp_meeting_exists'])
+                <a href="{{ route('rcp.show', $rec['id']) }}" class="pd-btn pd-btn--primary">View RCP Sheet</a>
+            @else
+                <a href="{{ route('rcp.create', $rec['id']) }}" class="pd-btn pd-btn--primary">Complete RCP Sheet</a>
+            @endif
+        </div>
+    @else
     <div class="pd-action-bar">
         <a href="{{ route('recommendations.index') }}" class="pd-btn pd-btn--outline">Back to List</a>
 
@@ -192,6 +202,7 @@
             <button type="submit" class="pd-btn pd-btn--primary pd-btn--block">Validate Recommendation</button>
         </form>
     </div>
+    @endif
 
 </div>
 @endsection

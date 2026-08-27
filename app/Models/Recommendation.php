@@ -42,6 +42,11 @@ class Recommendation extends Model
         return $this->belongsTo(Consultation::class, 'consultation_id', 'consultation_id');
     }
 
+    public function rcpMeeting()
+    {
+        return $this->hasOne(RcpMeeting::class, 'recommendation_id', 'recommendation_id');
+    }
+
     public function getStatusLabelAttribute(): string
     {
         return match ($this->status) {

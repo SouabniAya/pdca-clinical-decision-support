@@ -64,6 +64,7 @@ class RecommendationController extends Controller
             'consultation.doctor.user',
             'consultation.tumorEvaluation',
             'consultation.comorbidities',
+            'rcpMeeting',
         ])->findOrFail($id);
 
         $consultation = $rec->consultation;
@@ -80,6 +81,7 @@ class RecommendationController extends Controller
             'consultation_date' => $consultation->consultation_date?->format('d/m/Y'),
             'stage_label' => $this->stageLabel($rec),
             'status' => $rec->status,
+            'rcp_meeting_exists' => (bool) $rec->rcpMeeting,
             'clinical' => [
                 'performance_status' => $consultation->performance_status,
                 'ca19_9' => $evaluation->ca19_9_level,

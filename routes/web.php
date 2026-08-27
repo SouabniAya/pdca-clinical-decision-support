@@ -10,6 +10,7 @@ use App\Http\Controllers\DoctorProfileController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ClinicalRuleController;
+use App\Http\Controllers\RcpController;
 use App\Http\Controllers\DashboardController;
 
 use App\Services\PdacRuleEngine;
@@ -65,9 +66,7 @@ Route::resource('patients', PatientController::class);
 // Clinical explanation
 Route::get(
     '/patients/{id}/clinical-explanation',
-    function ($id) {
-        return view('patients.clinical-explanation');
-    }
+    [PatientController::class, 'clinicalExplanation']
 )->name('patients.clinical-explanation');
 
 
@@ -201,6 +200,14 @@ Route::post('/recommendations/{id}/reject', [RecommendationController::class, 'r
 
 Route::post('/recommendations/{id}/rcp', [RecommendationController::class, 'sendToRcp'])
     ->name('recommendations.rcp');
+
+// RCP meeting sheet (RF-15/16) — the actual meeting record
+Route::get('/recommendations/{id}/rcp-sheet/create', [RcpController::class, 'create'])
+    ->name('rcp.create');
+Route::post('/recommendations/{id}/rcp-sheet', [RcpController::class, 'store'])
+    ->name('rcp.store');
+Route::get('/recommendations/{id}/rcp-sheet', [RcpController::class, 'show'])
+    ->name('rcp.show');
 
 
 

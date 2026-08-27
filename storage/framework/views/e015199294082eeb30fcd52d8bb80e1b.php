@@ -127,7 +127,7 @@
                                     <?php endif; ?>
                                 </span>
                             </div>
-                            <a href="<?php echo e(route('patients.details', $item['patient_id'])); ?>" class="dashboard-recos__action">Review</a>
+                            <a href="<?php echo e(route('recommendations.show', $item['id'])); ?>" class="dashboard-recos__action">Review</a>
                         </li>
                     <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                         <li class="dashboard-recos__item">

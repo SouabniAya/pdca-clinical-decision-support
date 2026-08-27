@@ -173,6 +173,16 @@
     </div>
 
     
+    <?php if($rec['status'] === 'rcp'): ?>
+        <div class="pd-action-bar" style="grid-template-columns: 1fr 1.4fr;">
+            <a href="<?php echo e(route('recommendations.index')); ?>" class="pd-btn pd-btn--outline">Back to List</a>
+            <?php if($rec['rcp_meeting_exists']): ?>
+                <a href="<?php echo e(route('rcp.show', $rec['id'])); ?>" class="pd-btn pd-btn--primary">View RCP Sheet</a>
+            <?php else: ?>
+                <a href="<?php echo e(route('rcp.create', $rec['id'])); ?>" class="pd-btn pd-btn--primary">Complete RCP Sheet</a>
+            <?php endif; ?>
+        </div>
+    <?php else: ?>
     <div class="pd-action-bar">
         <a href="<?php echo e(route('recommendations.index')); ?>" class="pd-btn pd-btn--outline">Back to List</a>
 
@@ -191,6 +201,7 @@
             <button type="submit" class="pd-btn pd-btn--primary pd-btn--block">Validate Recommendation</button>
         </form>
     </div>
+    <?php endif; ?>
 
 </div>
 <?php $__env->stopSection(); ?>

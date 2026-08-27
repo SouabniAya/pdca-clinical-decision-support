@@ -127,7 +127,7 @@
                                     @endif
                                 </span>
                             </div>
-                            <a href="{{ route('patients.details', $item['patient_id']) }}" class="dashboard-recos__action">Review</a>
+                            <a href="{{ route('recommendations.show', $item['id']) }}" class="dashboard-recos__action">Review</a>
                         </li>
                     @empty
                         <li class="dashboard-recos__item">

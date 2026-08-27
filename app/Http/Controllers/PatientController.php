@@ -123,7 +123,31 @@ public function update(Request $request, $id)
     }
 public function details(Patient $patient)
 {
-    return view('patients.details', compact('patient'));
+    $latestRecommendation = $patient->latestRecommendation;
+
+    return view('patients.details', compact('patient', 'latestRecommendation'));
+}
+
+/**
+ * Clinical Explanation page — the real applied rule for this
+ * patient's latest recommendation, replacing the previous static
+ * "Ahmed Benali / R5 x3" demo content.
+ */
+public function clinicalExplanation(Patient $patient)
+{
+    $recommendation = $patient->latestRecommendation;
+
+    if (! $recommendation) {
+        return view('patients.clinical-explanation', [
+            'patient' => $patient,
+            'recommendation' => null,
+        ]);
+    }
+
+    return view('patients.clinical-explanation', [
+        'patient' => $patient,
+        'recommendation' => $recommendation,
+    ]);
 }
     public function destroy($id)
     {
