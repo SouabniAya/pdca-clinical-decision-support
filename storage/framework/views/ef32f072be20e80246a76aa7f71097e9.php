@@ -1,7 +1,7 @@
 <header class="app-header">
 
     
-    <div class="app-header__search">
+    <form method="GET" action="<?php echo e(route('patients.index')); ?>" class="app-header__search">
         <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -26,10 +26,12 @@
 
         <input
             type="search"
+            name="search"
+            value="<?php echo e(request('search')); ?>"
             placeholder="Search..."
             aria-label="Search"
         >
-    </div>
+    </form>
 
 
     
@@ -66,7 +68,6 @@
             <span class="app-header__badge"></span>
         </button>
 
-
         
         <?php
             $currentUser = auth()->guard('web')->user() ?? auth()->guard('admin')->user();
@@ -75,12 +76,11 @@
                 : 'Guest';
         ?>
 
-        
-   <a    
-    href="<?php echo e(route('profile')); ?>"
-    class="app-header__profile"
-    aria-label="View profile"
->
+        <a
+                href="<?php echo e(route('profile')); ?>"
+            class="app-header__profile"
+            aria-label="View profile"
+        >
 
             
             <span class="app-header__avatar">

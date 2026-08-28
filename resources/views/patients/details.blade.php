@@ -158,10 +158,6 @@
             <div class="pd-card">
                 <div class="pd-consult__head">
                     <h2 class="pd-card__title pd-card__title--no-icon">Consultations &amp; Follow-up</h2>
-                    <button type="button" class="pd-btn pd-btn--primary pd-btn--sm">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                        Schedule Consultation
-                    </button>
                 </div>
 
                 @if ($latest)
@@ -174,8 +170,6 @@
                 @else
                     <p style="color:#6b7280;font-size:14px;">No consultations recorded yet.</p>
                 @endif
-
-                <a href="#" class="pd-link pd-link--right">View Schedule &rarr;</a>
             </div>
 
         </div>
