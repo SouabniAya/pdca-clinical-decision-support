@@ -10,7 +10,7 @@ use App\Models\Visitor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
+use Illuminate\Database\QueryException;
 class UserController extends Controller
 {
     public function index(Request $request)
@@ -336,10 +336,11 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User updated.');
     }
 
-    public function destroy(string $id)
-    {
-        $resolved = $this->resolveId($id);
+   public function destroy($id)
+{
+    $resolved = $this->resolveId($id);
 
+    try {
         if ($resolved['type'] === 'admin') {
             Admin::findOrFail($resolved['pk'])->delete();
         } else {
@@ -347,5 +348,24 @@ class UserController extends Controller
         }
 
         return redirect()->route('users.index')->with('success', 'User deleted.');
+
+    } catch (QueryException $e) {
+        // Foreign key constraint violation (MySQL error code 1451 / SQLSTATE 23000):
+        // this account has linked records (consultations, recommendations, etc.)
+        // and cannot be safely deleted. Deactivate it instead to preserve history.
+        if ($e->getCode() === '23000') {
+            if ($resolved['type'] === 'admin') {
+                Admin::findOrFail($resolved['pk'])->update(['active' => false]);
+            } else {
+                User::findOrFail($resolved['pk'])->update(['active' => false]);
+            }
+
+            return redirect()->route('users.index')
+                ->with('warning', 'This account has linked records and cannot be deleted. It has been deactivated instead.');
+        }
+
+        // Any other database error: re-throw so it still shows up properly.
+        throw $e;
     }
+}
 }

@@ -61,7 +61,7 @@ unset($__defined_vars, $__key, $__value); ?>
         </a>
       </li>
       <li>
-        <a href="<?php echo e(url('/patients/1/clinical-data')); ?>" <?php if($active === 'clinical-data'): ?> class="is-active" <?php endif; ?>>
+        <a href="<?php echo e(route('clinical-data.create')); ?>" <?php if($active === 'clinical-data'): ?> class="is-active" <?php endif; ?>>
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M14.5 9.5l3 3-4 1.3 1-3.3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
           Clinical Data Entry
         </a>
@@ -72,19 +72,49 @@ unset($__defined_vars, $__key, $__value); ?>
           Reports
         </a>
       </li>
+
+      <?php if(auth('admin')->check()): ?>
       <li>
         <a href="<?php echo e(url('/users')); ?>" <?php if($active === 'users'): ?> class="is-active" <?php endif; ?>>
           <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 19c0-3 2.9-4.7 6.5-4.7s6.5 1.7 6.5 4.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="16.5" cy="8.3" r="2.4" stroke="currentColor" stroke-width="1.6"/><path d="M14.6 19c.3-2.3 2.1-3.7 4.4-3.7s4.1 1.4 4.4 3.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
           Users
         </a>
       </li>
+      <?php endif; ?>
+
+      <?php if(auth('web')->check()): ?>
+      <li>
+        <a href="<?php echo e(route('profile')); ?>" <?php if($active === 'profile'): ?> class="is-active" <?php endif; ?>>
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          My Profile
+        </a>
+      </li>
+      <?php endif; ?>
     </ul>
   </nav>
 
   <div class="sidebar__bottom">
+    <?php if(auth('admin')->check()): ?>
     <a href="<?php echo e(url('/settings')); ?>" <?php if($active === 'settings'): ?> class="is-active" <?php endif; ?>>
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
       Settings
     </a>
+    <?php endif; ?>
+    <?php if(auth('admin')->check()): ?>
+<li>
+  <a href="<?php echo e(route('profile')); ?>" <?php if($active === 'profile'): ?> class="is-active" <?php endif; ?>>
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    My Profile
+  </a>
+</li>
+<?php endif; ?>
+
+       <form method="POST" action="<?php echo e(route('logout')); ?>">
+      <?php echo csrf_field(); ?>
+      <button type="submit" class="sidebar__bottom-btn">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 17l5-5-5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 12H3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Logout
+      </button>
+    </form>
   </div>
 </aside><?php /**PATH C:\Users\DELL HH\Documents\pdca-project\resources\views/components/sidebar.blade.php ENDPATH**/ ?>

@@ -78,6 +78,37 @@
   text-decoration: none;
   border-left: 3px solid transparent;
 }
+.sidebar__bottom form {
+  margin: 0;
+}
+.sidebar__bottom-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+.sidebar__bottom-btn svg {
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+}
+.sidebar__bottom-btn:hover,
+.sidebar__bottom-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-white);
+}
 .sidebar__bottom a svg {
   width: 19px;
   height: 19px;

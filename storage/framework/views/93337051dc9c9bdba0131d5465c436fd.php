@@ -32,33 +32,57 @@
             </span>
             <div class="dashboard-stat-card__body">
                 <h3>Recommendations</h3>
-                <strong><?php echo e(count($recommendations)); ?></strong>
+                <strong><?php echo e($totalCount); ?></strong>
                 <span>In the system</span>
             </div>
         </div>
 
     </div>
 
-    <div class="patients-toolbar">
+    
+    <form method="GET" action="<?php echo e(route('recommendations.index')); ?>" class="patients-toolbar" id="filters-form">
+
         <div class="patients-toolbar__search">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <input type="search" placeholder="Search by patient name or ID...">
+            <input
+                type="search"
+                name="search"
+                value="<?php echo e($filters['search'] ?? ''); ?>"
+                placeholder="Search by patient name or ID..."
+            >
         </div>
 
         <div class="patients-toolbar__filter">
-            <span>Status</span>
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="patients-toolbar__filter">
-            <span>Stage</span>
+            <select name="status" onchange="document.getElementById('filters-form').submit()">
+                <option value="">Status</option>
+                <?php $__currentLoopData = $statusOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($value); ?>" <?php if(($filters['status'] ?? '') === $value): echo 'selected'; endif; ?>>
+                        <?php echo e($label); ?>
+
+                    </option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
 
-        <button type="button" class="patients-toolbar__reset">
+        <div class="patients-toolbar__filter">
+            <select name="stage" onchange="document.getElementById('filters-form').submit()">
+                <option value="">Stage</option>
+                <?php $__currentLoopData = $stageOptions; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $value => $label): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <option value="<?php echo e($value); ?>" <?php if(($filters['stage'] ?? '') === $value): echo 'selected'; endif; ?>>
+                        <?php echo e($label); ?>
+
+                    </option>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </select>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+
+        <a href="<?php echo e(route('recommendations.index')); ?>" class="patients-toolbar__reset">
             Reset
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 8v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-    </div>
+        </a>
+    </form>
 
     <div class="patients-table-wrap">
         <table class="patients-table">
@@ -74,7 +98,7 @@
                 </tr>
             </thead>
             <tbody>
-                <?php $__currentLoopData = $recommendations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $rec): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php $__empty_1 = true; $__currentLoopData = $recommendations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $rec): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                 <tr>
                     <td><?php echo e($rec['patient_id']); ?></td>
                     <td><?php echo e($rec['patient_name']); ?></td>
@@ -93,14 +117,15 @@
                         </div>
                     </td>
                 </tr>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                <tr>
+                    <td colspan="7" style="text-align:center; padding: 24px;">No recommendations match your filters.</td>
+                </tr>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 
-    <a href="#" class="patients-page__view-all patients-page__view-all--right">View All Recommendations </a>
-
 </div>
 <?php $__env->stopSection(); ?>
-
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\DELL HH\Documents\pdca-project\resources\views/recommendations/index.blade.php ENDPATH**/ ?>

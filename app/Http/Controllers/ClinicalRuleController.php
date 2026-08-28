@@ -27,7 +27,8 @@ class ClinicalRuleController extends Controller
             });
         }
 
-        $rules = $query->orderByRaw("CASE WHEN rule_id = 'RCP' THEN 999 ELSE CAST(REPLACE(rule_id, 'R', '') AS INTEGER) END")->get();
+        // après (compatible MySQL)
+$rules = $query->orderByRaw("CASE WHEN rule_id = 'RCP' THEN 999 ELSE CAST(REPLACE(rule_id, 'R', '') AS UNSIGNED) END")->get();
 
         return view('patients.rules', [
             'rules' => $rules,

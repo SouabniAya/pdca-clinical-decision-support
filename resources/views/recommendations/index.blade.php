@@ -34,33 +34,55 @@
             </span>
             <div class="dashboard-stat-card__body">
                 <h3>Recommendations</h3>
-                <strong>{{ count($recommendations) }}</strong>
+                <strong>{{ $totalCount }}</strong>
                 <span>In the system</span>
             </div>
         </div>
 
     </div>
 
-    <div class="patients-toolbar">
+    {{-- ================= Search + Filters ================= --}}
+    <form method="GET" action="{{ route('recommendations.index') }}" class="patients-toolbar" id="filters-form">
+
         <div class="patients-toolbar__search">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-            <input type="search" placeholder="Search by patient name or ID...">
+            <input
+                type="search"
+                name="search"
+                value="{{ $filters['search'] ?? '' }}"
+                placeholder="Search by patient name or ID..."
+            >
         </div>
 
         <div class="patients-toolbar__filter">
-            <span>Status</span>
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <div class="patients-toolbar__filter">
-            <span>Stage</span>
+            <select name="status" onchange="document.getElementById('filters-form').submit()">
+                <option value="">Status</option>
+                @foreach ($statusOptions as $value => $label)
+                    <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>
+                        {{ $label }}
+                    </option>
+                @endforeach
+            </select>
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </div>
 
-        <button type="button" class="patients-toolbar__reset">
+        <div class="patients-toolbar__filter">
+            <select name="stage" onchange="document.getElementById('filters-form').submit()">
+                <option value="">Stage</option>
+                @foreach ($stageOptions as $value => $label)
+                    <option value="{{ $value }}" @selected(($filters['stage'] ?? '') === $value)>
+                        {{ $label }}
+                    </option>
+                @endforeach
+            </select>
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+
+        <a href="{{ route('recommendations.index') }}" class="patients-toolbar__reset">
             Reset
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 8v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </button>
-    </div>
+        </a>
+    </form>
 
     <div class="patients-table-wrap">
         <table class="patients-table">
@@ -76,7 +98,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach ($recommendations as $rec)
+                @forelse ($recommendations as $rec)
                 <tr>
                     <td>{{ $rec['patient_id'] }}</td>
                     <td>{{ $rec['patient_name'] }}</td>
@@ -95,12 +117,14 @@
                         </div>
                     </td>
                 </tr>
-                @endforeach
+                @empty
+                <tr>
+                    <td colspan="7" style="text-align:center; padding: 24px;">No recommendations match your filters.</td>
+                </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
-
-    <a href="#" class="patients-page__view-all patients-page__view-all--right">View All Recommendations </a>
 
 </div>
 @endsection

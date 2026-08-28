@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+
 class Admin extends Authenticatable
 {
     use Notifiable;
@@ -16,7 +17,7 @@ class Admin extends Authenticatable
 
     protected $keyType = 'int';
 
-    public $timestamps = false;   // <-- add this
+    public $timestamps = false;
 
     protected $fillable = [
         'first_name',
@@ -30,5 +31,11 @@ class Admin extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'active'     => 'boolean',
     ];
 }

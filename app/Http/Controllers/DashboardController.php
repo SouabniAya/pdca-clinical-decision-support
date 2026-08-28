@@ -30,6 +30,7 @@ class DashboardController extends Controller
                 $patient = $rec->consultation->patient;
 
                 return [
+                    'id' => $rec->recommendation_id,
                     'patient_id' => $patient->patient_id,
                     'patient_name' => trim($patient->first_name . ' ' . $patient->last_name),
                     'recommendation_text' => $rec->recommendation_text,

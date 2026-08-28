@@ -13,46 +13,74 @@ class RecommendationController extends Controller
     /**
      * List every recommendation currently in the system, most recent first.
      */
-    public function index(Request $request)
-    {
-        $query = Recommendation::with(['consultation.patient', 'consultation.doctor.user']);
+   public function index(Request $request)
+{
+    $filters = [
+        'search' => $request->input('search'),
+        'status' => $request->input('status'),
+        'stage'  => $request->input('stage'),
+    ];
 
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
+    $query = Recommendation::with(['consultation.patient', 'consultation.doctor.user', 'consultation.tumorEvaluation']);
 
-        if ($search = $request->input('search')) {
-            $query->whereHas('consultation.patient', function ($q) use ($search) {
-                $q->where('first_name', 'like', "%$search%")
-                  ->orWhere('last_name', 'like', "%$search%")
-                  ->orWhere('medical_record_number', 'like', "%$search%");
-            });
-        }
-
-        $rows = $query->orderByDesc('generation_date')->get();
-
-        $recommendations = $rows->map(function (Recommendation $rec) {
-            $patient = $rec->consultation->patient;
-            $doctorUser = $rec->consultation->doctor->user ?? null;
-
-            return [
-                'id' => $rec->recommendation_id,
-                'patient_id' => 'P' . str_pad((string) $patient->patient_id, 5, '0', STR_PAD_LEFT),
-                'patient_name' => trim($patient->first_name . ' ' . $patient->last_name),
-                'age' => $patient->age,
-                'status' => $rec->status_label,
-                'stage_label' => $this->stageLabel($rec),
-                'updated_at' => optional($rec->generation_date)->format('d/m/Y'),
-            ];
-        });
-
-        $pendingCount = $rows->where('status', Recommendation::STATUS_PROPOSED)->count();
-
-        return view('recommendations.index', [
-            'recommendations' => $recommendations,
-            'pendingCount' => $pendingCount,
-        ]);
+    if ($filters['status']) {
+        $query->where('status', $filters['status']);
     }
+
+    if ($filters['stage']) {
+        $query->whereHas('consultation.tumorEvaluation', function ($q) use ($filters) {
+            $q->where('resectability', $filters['stage']);
+        });
+    }
+
+    if ($filters['search']) {
+        $search = $filters['search'];
+        $query->whereHas('consultation.patient', function ($q) use ($search) {
+            $q->where('first_name', 'like', "%$search%")
+              ->orWhere('last_name', 'like', "%$search%")
+              ->orWhere('medical_record_number', 'like', "%$search%")
+              ->orWhereRaw("CONCAT(first_name, ' ', last_name) like ?", ["%$search%"]);
+        });
+    }
+
+    $rows = $query->orderByDesc('generation_date')->get();
+
+    $recommendations = $rows->map(function (Recommendation $rec) {
+        $patient = $rec->consultation->patient;
+
+        return [
+            'id' => $rec->recommendation_id,
+            'patient_id' => 'P' . str_pad((string) $patient->patient_id, 5, '0', STR_PAD_LEFT),
+            'patient_name' => trim($patient->first_name . ' ' . $patient->last_name),
+            'age' => $patient->age,
+            'status' => $rec->status_label,
+            'stage_label' => $this->stageLabel($rec),
+            'updated_at' => optional($rec->generation_date)->format('d/m/Y'),
+        ];
+    });
+
+    $pendingCount = Recommendation::where('status', Recommendation::STATUS_PROPOSED)->count();
+    $totalCount   = Recommendation::count();
+
+    return view('recommendations.index', [
+        'recommendations' => $recommendations,
+        'pendingCount' => $pendingCount,
+        'totalCount' => $totalCount,
+        'filters' => $filters,
+        'statusOptions' => [
+            Recommendation::STATUS_PROPOSED  => 'Proposed',
+            Recommendation::STATUS_VALIDATED => 'Validated',
+            Recommendation::STATUS_REJECTED  => 'Rejected',
+            Recommendation::STATUS_RCP       => 'Sent to RCP',
+        ],
+        'stageOptions' => [
+            'resectable'        => 'Resectable',
+            'borderline'        => 'Borderline',
+            'locally_advanced'  => 'Locally Advanced',
+            'metastatic'        => 'Metastatic',
+        ],
+    ]);
+}
 
     /**
      * Show the full traceable detail of a single recommendation.

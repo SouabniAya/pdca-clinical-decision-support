@@ -8,15 +8,21 @@
     <div class="patients-page__head">
         <div>
             <h1>Clinical Data Entry</h1>
-            <p>Record or update the clinical assessment for <?php echo e($patient['name'] ?? 'this patient'); ?> — resectability, performance status, CA19-9 and comorbidities.</p>
+            <?php if(!empty($patient)): ?>
+                <p>Record or update the clinical assessment for <?php echo e($patient['name']); ?> — resectability, performance status, CA19-9 and comorbidities.</p>
+            <?php else: ?>
+                <p>Choose a patient below, then record their clinical assessment — resectability, performance status, CA19-9 and comorbidities.</p>
+            <?php endif; ?>
         </div>
-        <a href="<?php echo e(url('/patients/' . ($patient['id'] ?? ''))); ?>" class="patients-page__btn patients-page__btn--ghost">
+        <?php if(!empty($patient)): ?>
+        <a href="<?php echo e(url('/patients/' . $patient['id'])); ?>" class="patients-page__btn patients-page__btn--ghost">
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 6l-6 6 6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Back to Patient File
         </a>
+        <?php endif; ?>
     </div>
 
-    <form class="clinical-form" method="POST" action="<?php echo e(route('clinical-data.store', ['id' => $patient['id'] ?? null])); ?>">
+    <form class="clinical-form" method="POST" action="<?php echo e(!empty($patient) ? route('clinical-data.store', ['id' => $patient['id']]) : route('clinical-data.storeAny')); ?>">
         <?php echo csrf_field(); ?>
         <?php if(!empty($evaluation)): ?>
             <?php echo method_field('PUT'); ?>
@@ -24,6 +30,33 @@
 
         <?php if($errors->any()): ?>
             <div class="clinical-form__error"><?php echo e($errors->first()); ?></div>
+        <?php endif; ?>
+
+        <?php if(empty($patient)): ?>
+        
+        <div class="clinical-form__section">
+            <div class="clinical-form__section-head">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="8" r="3.5" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+                <h2>Patient</h2>
+            </div>
+            <div class="clinical-form__grid">
+                <div class="clinical-form__field clinical-form__field--full">
+                    <label for="patient_id">Select patient</label>
+                    <select id="patient_id" name="patient_id" required>
+                        <option value="">Select a patient...</option>
+                        <?php $__currentLoopData = ($patients ?? []); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($p['id']); ?>" <?php if(old('patient_id') == $p['id']): echo 'selected'; endif; ?>>
+                                <?php echo e($p['name']); ?> — <?php echo e($p['mrn']); ?>
+
+                            </option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </select>
+                    <?php if(empty($patients)): ?>
+                        <p class="clinical-form__empty">No patients on record yet — add one from the Patients page first.</p>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
         <?php endif; ?>
 
         
@@ -170,7 +203,7 @@
         </div>
 
         <div class="clinical-form__actions">
-            <a href="<?php echo e(url('/patients/' . ($patient['id'] ?? ''))); ?>" class="clinical-form__cancel">Cancel</a>
+            <a href="<?php echo e(!empty($patient) ? url('/patients/' . $patient['id']) : url('/patients')); ?>" class="clinical-form__cancel">Cancel</a>
             <button type="submit" class="clinical-form__submit">Save Clinical Data</button>
         </div>
     </form>

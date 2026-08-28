@@ -1,5 +1,3 @@
-
-
 <header class="app-header">
 
     
@@ -70,23 +68,31 @@
 
 
         
-        <a
-            href="<?php echo e(route('doctor.profile')); ?>"
-            class="app-header__profile"
-            aria-label="View profile"
-        >
+        <?php
+            $currentUser = auth()->guard('web')->user() ?? auth()->guard('admin')->user();
+            $fullName = $currentUser
+                ? trim($currentUser->first_name . ' ' . $currentUser->last_name)
+                : 'Guest';
+        ?>
+
+        
+   <a    
+    href="<?php echo e(route('profile')); ?>"
+    class="app-header__profile"
+    aria-label="View profile"
+>
 
             
             <span class="app-header__avatar">
-<img
-    src="<?php echo e(asset('images/doctor-taieb.jpg')); ?>"
-    alt="Dr. Taieb"
->
+                <img
+                    src="<?php echo e($currentUser && $currentUser->profile_photo ? asset('storage/' . $currentUser->profile_photo) : asset('images/default-avatar.jpg')); ?>"
+                    alt="<?php echo e($fullName); ?>"
+                >
             </span>
 
             
             <span class="app-header__profile-name">
-                <?php echo e(auth()->user()->name ?? 'Dr. Taieb'); ?>
+                <?php echo e($fullName); ?>
 
             </span>
 
@@ -110,6 +116,4 @@
 
     </div>
 
-</header>
-
-<?php /**PATH C:\Users\DELL HH\Documents\pdca-project\resources\views/components/header.blade.php ENDPATH**/ ?>
+</header><?php /**PATH C:\Users\DELL HH\Documents\pdca-project\resources\views/components/header.blade.php ENDPATH**/ ?>

@@ -33,7 +33,7 @@
                 Refresh
             </button>
 
-            <button type="button" class="pd-btn pd-btn--primary">
+           <button type="button" id="rp-export-btn" class="pd-btn pd-btn--primary">
                 <svg viewBox="0 0 24 24"
                      fill="none"
                      stroke="currentColor"
@@ -446,6 +446,46 @@
     </div>
 
 </div>
+<?php $__env->startPush('scripts'); ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const applyBtn = document.querySelector('.rp-filters__actions .pd-btn--primary');
+    const resetBtn = document.querySelector('.rp-filters__actions .pd-btn--outline');
+    const exportBtn = document.getElementById('rp-export-btn');
 
+    function buildQuery() {
+        const params = new URLSearchParams();
+        const dateFrom = document.getElementById('rp-date-from').value;
+        const dateTo = document.getElementById('rp-date-to').value;
+        const doctor = document.getElementById('rp-doctor').value;
+
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
+        if (doctor) params.append('doctor', doctor);
+
+        return params.toString();
+    }
+
+    // Export button → downloads CSV for the selected report type
+    exportBtn.addEventListener('click', function () {
+        const type = document.getElementById('rp-report-type').value || 'patients';
+        const query = buildQuery();
+        const url = `/reports/export/${type}` + (query ? `?${query}` : '');
+        window.location.href = url;
+    });
+
+    // Apply filters → reloads the page with filters as query params
+    applyBtn.addEventListener('click', function () {
+        const query = buildQuery();
+        window.location.href = `<?php echo e(route('reports.index')); ?>` + (query ? `?${query}` : '');
+    });
+
+    // Reset → clears filters
+    resetBtn.addEventListener('click', function () {
+        window.location.href = `<?php echo e(route('reports.index')); ?>`;
+    });
+});
+</script>
+<?php $__env->stopPush(); ?>
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\Users\DELL HH\Documents\pdca-project\resources\views/patients/reports.blade.php ENDPATH**/ ?>

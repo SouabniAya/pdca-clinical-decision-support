@@ -2,34 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class DoctorProfileController extends Controller
 {
     public function show()
     {
-        // TODO: replace with Auth::user() once the login module is implemented.
-        // For now we load Dr. Taieb specifically and log them in for this
-        // request only, so the Blade view's auth()->user() calls resolve.
-        $user = User::with('doctor')
-            ->whereHas('doctor')
-            ->where('email', 'dr.taieb@esi.dz')
-            ->first();
+        $user = Auth::guard('web')->user();
 
-        if (! $user) {
-            $user = User::with('doctor')->whereHas('doctor')->first();
-        }
+        abort_if(! $user, 403, 'You must be logged in as a doctor to view this page.');
 
-        abort_if(! $user, 404, 'No doctor account found.');
+        $user->load('doctor');
 
-        Auth::login($user); // TEMPORARY — see TODO above
+        abort_if(! $user->doctor, 404, 'No doctor profile found for this account.');
 
-      $doctor = [
-    'specialty' => $user->doctor->specialty ?? 'N/A',
-    'license_number' => $user->doctor->license_number ?? 'N/A',
-    'institution' => $user->doctor->institution ?? 'N/A',
-];
+        $doctor = [
+            'specialty'      => $user->doctor->specialty ?? 'N/A',
+            'license_number' => $user->doctor->license_number ?? 'N/A',
+            'institution'    => $user->doctor->institution ?? 'N/A',
+        ];
 
         return view('patients.doctor-profile', compact('doctor'));
     }

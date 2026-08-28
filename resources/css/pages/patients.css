@@ -231,6 +231,31 @@
   color: var(--color-cerulean);
   text-decoration: none;
 }
+/* Toolbar filter — variant with native <select> (used on Recommendations page) */
+.patients-toolbar__filter {
+  position: relative;
+}
+.patients-toolbar__filter select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding-right: 18px;
+}
+.patients-toolbar__filter:has(select) svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
 .patients-page__view-all--right {
   display: block;
   text-align: right;

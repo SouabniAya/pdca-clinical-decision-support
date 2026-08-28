@@ -1,5 +1,3 @@
-
-
 <header class="app-header">
 
     {{-- ================= Search ================= --}}
@@ -69,24 +67,32 @@
         </button>
 
 
-        {{-- ================= Doctor profile ================= --}}
-        <a
-            href="{{ route('doctor.profile') }}"
-            class="app-header__profile"
-            aria-label="View profile"
-        >
+        {{-- ================= User profile ================= --}}
+        @php
+            $currentUser = auth()->guard('web')->user() ?? auth()->guard('admin')->user();
+            $fullName = $currentUser
+                ? trim($currentUser->first_name . ' ' . $currentUser->last_name)
+                : 'Guest';
+        @endphp
+
+        
+   <a    
+    href="{{ route('profile') }}"
+    class="app-header__profile"
+    aria-label="View profile"
+>
 
             {{-- Avatar --}}
             <span class="app-header__avatar">
-<img
-    src="{{ asset('images/doctor-taieb.jpg') }}"
-    alt="Dr. Taieb"
->
+                <img
+                    src="{{ $currentUser && $currentUser->profile_photo ? asset('storage/' . $currentUser->profile_photo) : asset('images/default-avatar.jpg') }}"
+                    alt="{{ $fullName }}"
+                >
             </span>
 
             {{-- Name --}}
             <span class="app-header__profile-name">
-                {{ auth()->user()->name ?? 'Dr. Taieb' }}
+                {{ $fullName }}
             </span>
 
             {{-- Arrow --}}
@@ -110,4 +116,3 @@
     </div>
 
 </header>
-
