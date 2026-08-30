@@ -52,12 +52,10 @@
         <div class="pd-main">
 
             {{--
-                Clinical Data Summary
-                TODO: these fields (resectability, ECOG, CA19-9, comorbidities,
-                contraindications, metastases, vascular involvement, weight/BMI)
-                live on a clinical-data table that isn't wired up yet.
-                Once that model exists, replace the '—' fallbacks below with
-                the real relation, e.g. $latest->clinicalData->resectability_status ?? '—'
+                Clinical Data Summary — now wired to $latest->tumorEvaluation and
+                $latest->comorbidities. Distant Metastases, Vascular Involvement,
+                and Weight/BMI stay as '—' because those columns don't exist yet
+                in tumor_evaluation — add them via migration if you need to track them.
             --}}
             <div class="pd-card">
                 <h2 class="pd-card__title">
@@ -65,7 +63,7 @@
                     Clinical Data Summary
                 </h2>
 
-                <div class="pd-clinical">
+                               <div class="pd-clinical">
                     <ul class="pd-clinical__col">
                         <li>
                             <span class="pd-clinical__icon">
@@ -73,7 +71,7 @@
                             </span>
                             <div>
                                 <span class="pd-clinical__label">Resectability Status</span>
-                                <strong class="pd-clinical__value">{{ $latest->resectability_status ?? '—' }}</strong>
+                                <strong class="pd-clinical__value">{{ $latest?->tumorEvaluation?->resectability ? ucfirst(str_replace('_', ' ', $latest->tumorEvaluation->resectability)) : '—' }}</strong>
                             </div>
                         </li>
                         <li>
@@ -91,7 +89,7 @@
                             </span>
                             <div>
                                 <span class="pd-clinical__label">Performance Status (ECOG)</span>
-                                <strong class="pd-clinical__value">{{ $latest->ecog ?? '—' }}</strong>
+                                <strong class="pd-clinical__value">{{ $latest->performance_status ?? '—' }}</strong>
                             </div>
                         </li>
                         <li>
@@ -100,7 +98,7 @@
                             </span>
                             <div>
                                 <span class="pd-clinical__label">CA19-9</span>
-                                <strong class="pd-clinical__value">{{ $latest->ca19_9 ?? '—' }}</strong>
+                                <strong class="pd-clinical__value">{{ $latest?->tumorEvaluation?->ca19_9_level ?? '—' }}</strong>
                             </div>
                         </li>
                         <li>
@@ -109,7 +107,13 @@
                             </span>
                             <div>
                                 <span class="pd-clinical__label">Major Comorbidities</span>
-                                <strong class="pd-clinical__value">{{ $latest->comorbidities ?? '—' }}</strong>
+                                <strong class="pd-clinical__value">
+                                    @if ($latest && $latest->comorbidities->isNotEmpty())
+                                        {{ $latest->comorbidities->map(fn ($c) => $c->label . ' (' . ucfirst($c->pivot->severity ?? '—') . ')')->implode(', ') }}
+                                    @else
+                                        —
+                                    @endif
+                                </strong>
                             </div>
                         </li>
                     </ul>
@@ -120,34 +124,7 @@
                             </span>
                             <div>
                                 <span class="pd-clinical__label">Surgical Contraindications</span>
-                                <strong class="pd-clinical__value">{{ $latest->surgical_contraindications ?? '—' }}</strong>
-                            </div>
-                        </li>
-                        <li>
-                            <span class="pd-clinical__icon">
-                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
-                            </span>
-                            <div>
-                                <span class="pd-clinical__label">Distant Metastases</span>
-                                <strong class="pd-clinical__value">{{ $latest->distant_metastases ?? '—' }}</strong>
-                            </div>
-                        </li>
-                        <li>
-                            <span class="pd-clinical__icon">
-                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
-                            </span>
-                            <div>
-                                <span class="pd-clinical__label">Vascular Involvement</span>
-                                <strong class="pd-clinical__value">{{ $latest->vascular_involvement ?? '—' }}</strong>
-                            </div>
-                        </li>
-                        <li>
-                            <span class="pd-clinical__icon">
-                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/></svg>
-                            </span>
-                            <div>
-                                <span class="pd-clinical__label">Weight / BMI</span>
-                                <strong class="pd-clinical__value">{{ $latest->weight_bmi ?? '—' }}</strong>
+                                <strong class="pd-clinical__value">{{ $latest?->tumorEvaluation ? ($latest->tumorEvaluation->surgery_contraindication ? 'Yes' : 'No') : '—' }}</strong>
                             </div>
                         </li>
                     </ul>
@@ -177,22 +154,20 @@
         {{-- Sidebar column --}}
         <aside class="pd-side">
 
-            {{--
-                TODO: Recommendation section depends on a Recommendation model
-                (already used in PatientController stats) that isn't linked to
-                a patient here yet. Wire up $patient->recommendations()->latest()->first()
-                once that relation exists on the Patient model.
-            --}}
             <div class="pd-card">
                 <h2 class="pd-card__title pd-card__title--no-icon">Recommendation generated</h2>
                 <p class="pd-card__subtitle">Based on patient data and clinical rules</p>
 
-                <p style="color:#6b7280;font-size:14px;">No recommendation available yet for this patient.</p>
-
-                <div class="pd-recommendation__actions">
-                    <a href="{{ route('patients.clinical-explanation', $patient->patient_id) }}" class="pd-btn pd-btn--outline pd-btn--block">View Explanation</a>
-                    <a href="#" class="pd-btn pd-btn--primary pd-btn--block">View Details</a>
-                </div>
+                @if ($latestRecommendation)
+                    <p style="color:#111827;font-size:14px;font-weight:600;margin-bottom:4px;">
+                        {{ $latestRecommendation->recommendation_text }}
+                    </p>
+                    <p style="color:#6b7280;font-size:13px;">
+                        Status: {{ ucfirst($latestRecommendation->status) }}
+                    </p>
+                @else
+                    <p style="color:#6b7280;font-size:14px;">No recommendation available yet for this patient.</p>
+                @endif
             </div>
 
             {{--
@@ -201,13 +176,26 @@
                 (e.g. $patient->activityLog()->latest()->take(5)->get())
                 once that table exists.
             --}}
-            <div class="pd-card">
+                <div class="pd-card">
                 <h2 class="pd-card__title">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 12a9 9 0 1 1 3 6.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 8v5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     Modification History
                 </h2>
 
-                <p style="color:#6b7280;font-size:14px;">No activity history available yet.</p>
+                @forelse ($activityLogs as $log)
+                    <div style="padding:10px 0; border-bottom:1px solid #f1f1f1;">
+                        <p style="font-size:13.5px; color:#111827; margin:0 0 2px;">{!! $log->message !!}</p>
+                        <span style="font-size:12.5px; color:#6b7280;">
+                            {{ $log->actor_name }}
+                            @if ($log->detail)
+                                &middot; {{ $log->detail }}
+                            @endif
+                            &middot; {{ $log->created_at->diffForHumans() }}
+                        </span>
+                    </div>
+                @empty
+                    <p style="color:#6b7280;font-size:14px;">No activity history available yet.</p>
+                @endforelse
             </div>
 
         </aside>

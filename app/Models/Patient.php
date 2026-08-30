@@ -38,4 +38,30 @@ class Patient extends Model
         return $this->hasOne(Consultation::class, 'patient_id', 'patient_id')
                     ->latestOfMany('consultation_date');
     }
+
+    /**
+     * Toutes les recommandations du patient, via ses consultations.
+     */
+    public function recommendations()
+    {
+        return $this->hasManyThrough(
+            Recommendation::class,
+            Consultation::class,
+            'patient_id',        // clé étrangère sur consultation
+            'consultation_id',   // clé étrangère sur recommendation
+            'patient_id',        // clé locale sur patient
+            'consultation_id'    // clé locale sur consultation
+        );
+    }
+
+    /**
+     * La recommandation la plus récente du patient (accessor,
+     * utilisée dans PatientController via $patient->latestRecommendation).
+     */
+    public function getLatestRecommendationAttribute()
+    {
+        return $this->recommendations()
+                    ->orderByDesc('generation_date')
+                    ->first();
+    }
 }

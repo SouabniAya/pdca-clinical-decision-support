@@ -24,6 +24,7 @@ class ActivityLog extends Model
         'detail',
         'patient_id',
         'user_id',
+        'admin_id',
         'created_at',
     ];
 
@@ -41,27 +42,44 @@ class ActivityLog extends Model
         return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 
+    public function admin()
+    {
+        return $this->belongsTo(Admin::class, 'admin_id', 'admin_id');
+    }
+
     /**
      * Write one activity feed entry.
      *
      * $patientId is optional (not every event is patient-scoped, though
-     * today all of them are). $userId defaults to the current auth user
-     * when available — falls back to null ("System") since the app's
-     * auth is not fully wired everywhere yet.
+     * today all of them are). If neither $userId nor $adminId is passed
+     * explicitly, we detect the currently authenticated actor from
+     * whichever guard is active (web = doctor/nurse/visitor, admin = admin)
+     * and fill the matching column. Falls back to "System" (both null)
+     * if nobody is authenticated.
      */
     public static function log(
         string $type,
         string $message,
         ?string $detail = null,
         ?int $patientId = null,
-        ?int $userId = null
+        ?int $userId = null,
+        ?int $adminId = null
     ): self {
+        if ($userId === null && $adminId === null) {
+            if (Auth::guard('web')->check()) {
+                $userId = Auth::guard('web')->id();
+            } elseif (Auth::guard('admin')->check()) {
+                $adminId = Auth::guard('admin')->id();
+            }
+        }
+
         return static::create([
             'type' => $type,
             'message' => $message,
             'detail' => $detail,
             'patient_id' => $patientId,
-            'user_id' => $userId ?? Auth::id(),
+            'user_id' => $userId,
+            'admin_id' => $adminId,
             'created_at' => now(),
         ]);
     }
@@ -80,5 +98,23 @@ class ActivityLog extends Model
             self::TYPE_RECOMMENDATION_STATUS_CHANGED => 'recommendation',
             default => 'update',
         };
+    }
+
+    /**
+     * Convenience accessor: returns the display name of whoever
+     * performed this action, regardless of whether they were a
+     * doctor/nurse/visitor (user_id) or an admin (admin_id).
+     */
+    public function getActorNameAttribute(): string
+    {
+        if ($this->user) {
+            return trim($this->user->first_name . ' ' . $this->user->last_name);
+        }
+
+        if ($this->admin) {
+            return trim($this->admin->first_name . ' ' . $this->admin->last_name);
+        }
+
+        return 'System';
     }
 }

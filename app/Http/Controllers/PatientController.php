@@ -71,13 +71,24 @@ class PatientController extends Controller
 
         return redirect()->route('patients.index')->with('success', 'Patient ajouté.');
     }
-
 public function show($id)
 {
-    $patient = Patient::with('consultations.doctor')->findOrFail($id);
+    $patient = Patient::with([
+        'consultations.doctor',
+        'consultations.tumorEvaluation',
+        'consultations.comorbidities',
+    ])->findOrFail($id);
+
     $latest = $patient->consultations->sortByDesc('consultation_date')->first();
 
-    return view('patients.details', compact('patient', 'latest'));
+    $latestRecommendation = $patient->latestRecommendation;
+
+    $activityLogs = ActivityLog::where('patient_id', $patient->patient_id)
+        ->orderByDesc('created_at')
+        ->take(5)
+        ->get();
+
+    return view('patients.details', compact('patient', 'latest', 'latestRecommendation', 'activityLogs'));
 }
 
     public function edit($id)
@@ -85,7 +96,8 @@ public function show($id)
         $patient = Patient::findOrFail($id);
         return view('patients.edit', compact('patient'));
     }
-public function update(Request $request, $id)
+
+    public function update(Request $request, $id)
     {
         $patient = Patient::findOrFail($id);
 
@@ -121,34 +133,36 @@ public function update(Request $request, $id)
 
         return redirect()->route('patients.index')->with('success', 'Patient mis à jour.');
     }
-public function details(Patient $patient)
-{
-    $latestRecommendation = $patient->latestRecommendation;
 
-    return view('patients.details', compact('patient', 'latestRecommendation'));
-}
+    public function details(Patient $patient)
+    {
+        $latestRecommendation = $patient->latestRecommendation;
 
-/**
- * Clinical Explanation page — the real applied rule for this
- * patient's latest recommendation, replacing the previous static
- * "Ahmed Benali / R5 x3" demo content.
- */
-public function clinicalExplanation(Patient $patient)
-{
-    $recommendation = $patient->latestRecommendation;
+        return view('patients.details', compact('patient', 'latestRecommendation'));
+    }
 
-    if (! $recommendation) {
+    /**
+     * Clinical Explanation page — the real applied rule for this
+     * patient's latest recommendation, replacing the previous static
+     * "Ahmed Benali / R5 x3" demo content.
+     */
+    public function clinicalExplanation(Patient $patient)
+    {
+        $recommendation = $patient->latestRecommendation;
+
+        if (! $recommendation) {
+            return view('patients.clinical-explanation', [
+                'patient' => $patient,
+                'recommendation' => null,
+            ]);
+        }
+
         return view('patients.clinical-explanation', [
             'patient' => $patient,
-            'recommendation' => null,
+            'recommendation' => $recommendation,
         ]);
     }
 
-    return view('patients.clinical-explanation', [
-        'patient' => $patient,
-        'recommendation' => $recommendation,
-    ]);
-}
     public function destroy($id)
     {
         Patient::findOrFail($id)->delete();
