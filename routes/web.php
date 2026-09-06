@@ -58,7 +58,8 @@ Route::middleware('auth:web,admin')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-
+Route::delete('/recommendations/{id}', [RecommendationController::class, 'destroy'])
+    ->name('recommendations.destroy');
     /*
     |----------------------------------------------------------------
     | Profile (smart redirect based on role)

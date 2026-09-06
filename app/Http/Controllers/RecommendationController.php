@@ -81,7 +81,27 @@ class RecommendationController extends Controller
         ],
     ]);
 }
+/**
+ * Delete a recommendation.
+ */
+public function destroy($id)
+{
+    $rec = Recommendation::with('consultation.patient')->findOrFail($id);
 
+    $patientName = trim($rec->consultation->patient->first_name . ' ' . $rec->consultation->patient->last_name);
+    $patientId = $rec->consultation->patient->patient_id;
+
+    $rec->delete();
+
+    ActivityLog::log(
+        ActivityLog::TYPE_RECOMMENDATION_STATUS_CHANGED,
+        "Recommendation for <strong>" . e($patientName) . "</strong> was deleted",
+        null,
+        $patientId
+    );
+
+    return back()->with('success', 'Recommendation deleted.');
+}
     /**
      * Show the full traceable detail of a single recommendation.
      */

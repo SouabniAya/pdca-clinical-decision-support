@@ -38,17 +38,8 @@
     <div class="app-header__right">
 
         
-        <button
-            type="button"
-            class="app-header__icon-btn"
-            aria-label="Notifications"
-        >
-            <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                aria-hidden="true"
-            >
+       
+           
                 <path
                     d="M12 3a5 5 0 0 0-5 5v3.2c0 .6-.2 1.2-.6 1.7L5 15h14l-1.4-2.1a2.8 2.8 0 0 1-.6-1.7V8a5 5 0 0 0-5-5Z"
                     stroke="currentColor"

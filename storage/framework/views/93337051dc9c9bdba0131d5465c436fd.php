@@ -111,9 +111,24 @@
                             <a href="<?php echo e(route('recommendations.show', $rec['id'])); ?>" aria-label="View recommendation">
                                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7-10.5-7-10.5-7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6"/></svg>
                             </a>
-                            <button type="button" aria-label="More options">
-                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                            </button>
+                            <form
+    action="<?php echo e(route('recommendations.destroy', $rec['id'])); ?>"
+    method="POST"
+    onsubmit="return confirm('Are you sure you want to delete this recommendation?');"
+    style="display:inline;"
+>
+    <?php echo csrf_field(); ?>
+    <?php echo method_field('DELETE'); ?>
+
+    <button type="submit" aria-label="Delete recommendation" class="patients-table__delete-btn">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M10 11v6M14 11v6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+    </button>
+</form>
                         </div>
                     </td>
                 </tr>
