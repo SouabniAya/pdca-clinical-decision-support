@@ -57,7 +57,7 @@
                         <input type="checkbox" name="remember">
                         Remember me
                     </label>
-                    <a href="<?php echo e(route('password.request')); ?>" class="login-form__forgot">Forgot password?</a>
+                   
                 </div>
 
                 <button type="submit" class="login-form__submit">Login</button>

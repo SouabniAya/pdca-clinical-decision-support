@@ -9,31 +9,18 @@ use App\Models\Doctor;
 use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReportController extends Controller
 {
     public function index(Request $request)
     {
-        $dateFrom = $request->query('date_from');
-        $dateTo   = $request->query('date_to');
-        $doctorId = $request->query('doctor');
-
         $stats = [
             'total_patients'         => Patient::count(),
             'total_recommendations'  => Recommendation::count(),
             'total_consultations'    => Consultation::count(),
             'total_conflicts'        => Recommendation::where('conflict', true)->count(),
         ];
-
-        $doctors = Doctor::with('user')->get()->map(function ($doctor) {
-            $user = $doctor->user;
-            return [
-                'id'   => $doctor->user_id,
-                'name' => $user ? trim($user->first_name . ' ' . $user->last_name) : 'Unknown',
-            ];
-        });
 
         $reports = Report::with('generatedBy')
             ->orderBy('created_at', 'desc')
@@ -42,8 +29,6 @@ class ReportController extends Controller
                 'id'           => $r->report_id,
                 'name'         => $r->name,
                 'type'         => ucfirst($r->type),
-                'date_from'    => $r->date_from,
-                'date_to'      => $r->date_to,
                 'generated_by' => $r->generatedBy
                     ? trim($r->generatedBy->first_name . ' ' . $r->generatedBy->last_name)
                     : 'System',
@@ -53,13 +38,7 @@ class ReportController extends Controller
 
         return view('patients.reports', [
             'stats'   => $stats,
-            'doctors' => $doctors,
             'reports' => $reports,
-            'filters' => [
-                'date_from' => $dateFrom,
-                'date_to'   => $dateTo,
-                'doctor'    => $doctorId,
-            ],
         ]);
     }
 
@@ -67,6 +46,9 @@ class ReportController extends Controller
      * Export manuel déclenché par le bouton "Export".
      * Génère le CSV, l'enregistre sur disque, log une ligne dans `report`,
      * puis le télécharge immédiatement.
+     *
+     * Patients et Recommendations exportent toujours la totalité des
+     * données du système (pas de filtrage par plage de dates).
      */
     public function export(Request $request, string $type): StreamedResponse
     {
@@ -77,22 +59,13 @@ class ReportController extends Controller
             abort(404, 'Unknown report type.');
         }
 
-        $dateFrom = $request->query('date_from');
-        $dateTo   = $request->query('date_to');
-        $doctorId = $request->query('doctor');
+        $csv = $this->buildCsv($type);
 
-        $csv = $this->buildCsv($type, $dateFrom, $dateTo, $doctorId);
-
-        $filename    = $type . '_report_' . now()->format('Y-m-d_His') . '.csv';
-        $storagePath = 'reports/' . $filename;
-        Storage::put($storagePath, $csv);
+        $filename = $type . '_report_' . now()->format('Y-m-d_His') . '.csv';
 
         Report::create([
             'name'         => ucfirst($type) . ' report – ' . now()->format('Y-m-d H:i'),
             'type'         => $type,
-            'date_from'    => $dateFrom,
-            'date_to'      => $dateTo,
-            'file_path'    => $storagePath,
             'generated_by' => auth()->id(),
             'status'       => 'completed',
             'created_at'   => now(),
@@ -104,30 +77,34 @@ class ReportController extends Controller
     }
 
     /**
-     * Télécharge un rapport déjà généré (manuel ou quotidien) depuis l'historique.
+     * Télécharge un rapport depuis l'historique.
+     * Le CSV est toujours régénéré à partir des données actuelles de la
+     * base — jamais servi depuis un fichier figé sur disque — pour que
+     * le contenu reflète l'état réel du système au moment du téléchargement,
+     * même si le rapport a été "généré" (loggé) il y a plusieurs jours.
      */
     public function download(string $reportId)
     {
         $report = Report::findOrFail($reportId);
 
-        if (!$report->file_path || !Storage::exists($report->file_path)) {
-            abort(404, 'Report file not found.');
-        }
+        $csv = $this->buildCsv($report->type);
 
-        return Storage::download($report->file_path, basename($report->file_path));
+        $filename = $report->type . '_report_' . now()->format('Y-m-d_His') . '.csv';
+
+        return response()->streamDownload(function () use ($csv) {
+            echo $csv;
+        }, $filename, ['Content-Type' => 'text/csv']);
     }
 
-    private function buildCsv(string $type, ?string $dateFrom, ?string $dateTo, ?string $doctorId): string
+    private function buildCsv(string $type): string
     {
         $handle = fopen('php://temp', 'w+');
 
         switch ($type) {
             case 'patients':
                 fputcsv($handle, ['Patient ID', 'First Name', 'Last Name', 'Date of Birth', 'Sex', 'MRN', 'Status', 'Created At']);
-                $query = Patient::orderBy('patient_id');
-                if ($dateFrom) $query->whereDate('created_at', '>=', $dateFrom);
-                if ($dateTo)   $query->whereDate('created_at', '<=', $dateTo);
-                $query->chunk(200, function ($patients) use ($handle) {
+                // Rapport toujours complet : la totalité des patients du système.
+                Patient::orderBy('patient_id')->chunk(200, function ($patients) use ($handle) {
                     foreach ($patients as $p) {
                         fputcsv($handle, [
                             $p->patient_id, $p->first_name, $p->last_name, $p->date_of_birth,
@@ -139,15 +116,8 @@ class ReportController extends Controller
 
             case 'recommendations':
                 fputcsv($handle, ['Recommendation ID', 'Consultation ID', 'Rule ID', 'Status', 'Grade', 'Conflict', 'Generation Date']);
-                $query = Recommendation::orderBy('recommendation_id');
-                if ($dateFrom) $query->whereDate('generation_date', '>=', $dateFrom);
-                if ($dateTo)   $query->whereDate('generation_date', '<=', $dateTo);
-                if ($doctorId) {
-                    $query->whereHas('consultation', function ($q) use ($doctorId) {
-                        $q->where('doctor_id', $doctorId);
-                    });
-                }
-                $query->chunk(200, function ($recs) use ($handle) {
+                // Rapport toujours complet : la totalité des recommandations du système.
+                Recommendation::orderBy('recommendation_id')->chunk(200, function ($recs) use ($handle) {
                     foreach ($recs as $r) {
                         fputcsv($handle, [
                             $r->recommendation_id, $r->consultation_id, $r->rule_id,
@@ -159,11 +129,7 @@ class ReportController extends Controller
 
             case 'consultations':
                 fputcsv($handle, ['Consultation ID', 'Patient ID', 'Doctor ID', 'Consultation Date', 'Performance Status', 'Clinical Stage']);
-                $query = Consultation::orderBy('consultation_id');
-                if ($dateFrom) $query->whereDate('consultation_date', '>=', $dateFrom);
-                if ($dateTo)   $query->whereDate('consultation_date', '<=', $dateTo);
-                if ($doctorId) $query->where('doctor_id', $doctorId);
-                $query->chunk(200, function ($cons) use ($handle) {
+                Consultation::orderBy('consultation_id')->chunk(200, function ($cons) use ($handle) {
                     foreach ($cons as $c) {
                         fputcsv($handle, [
                             $c->consultation_id, $c->patient_id, $c->doctor_id,
@@ -175,11 +141,7 @@ class ReportController extends Controller
 
             case 'audit':
                 fputcsv($handle, ['Activity ID', 'Type', 'Message', 'Patient ID', 'User ID', 'Created At']);
-                $query = DB::table('activity_log')->orderBy('created_at', 'desc');
-                if ($dateFrom) $query->whereDate('created_at', '>=', $dateFrom);
-                if ($dateTo)   $query->whereDate('created_at', '<=', $dateTo);
-                if ($doctorId) $query->where('user_id', $doctorId);
-                $query->chunk(200, function ($logs) use ($handle) {
+                DB::table('activity_log')->orderBy('created_at', 'desc')->chunk(200, function ($logs) use ($handle) {
                     foreach ($logs as $log) {
                         fputcsv($handle, [
                             $log->activity_id, $log->type, strip_tags($log->message),

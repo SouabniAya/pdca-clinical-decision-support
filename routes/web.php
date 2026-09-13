@@ -18,7 +18,7 @@ use App\Http\Controllers\RcpController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
 use App\Services\PdacRuleEngine;
-
+use App\Http\Controllers\ForgotPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,9 +37,19 @@ Route::get('/login', function () {
 Route::post('/login', [AuthController::class, 'login'])
     ->name('login.store');
 
-Route::get('/password/forgot', function () {
-    return 'TODO: forgot password page';
-})->name('password.request');
+
+Route::get('/password/forgot', [ForgotPasswordController::class, 'showLinkRequestForm'])
+    ->name('password.request');
+ 
+Route::post('/password/forgot', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+    ->name('password.email');
+ 
+Route::get('/password/reset/{token}', [ForgotPasswordController::class, 'showResetForm'])
+    ->name('password.reset');
+ 
+Route::post('/password/reset', [ForgotPasswordController::class, 'reset'])
+    ->name('password.update');
+ 
 
 Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('auth.google');
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');

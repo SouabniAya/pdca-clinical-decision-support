@@ -117,7 +117,7 @@ $rules = $query->orderByRaw("CASE WHEN rule_id = 'RCP' THEN 999 ELSE CAST(REPLAC
             'grade' => 'nullable|string|max:60',
         ]);
 
-        $data['active'] = $request->boolean('active', true);
+      $data['active'] = $request->boolean('active');
 
         return $data;
     }
